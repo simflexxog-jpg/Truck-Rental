@@ -1,0 +1,24 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  
+  <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:border-cyan-500/50 transition-colors cursor-default">
+    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Funds Locked In Escrow</span>
+    <div class="text-3xl font-bold font-mono text-cyan-400 mt-2">{{ metrics.escrow | currency:'USD' }}</div>
+    <div class="text-xs text-slate-500 mt-2">Pending driver delivery confirmations</div>
+    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
+  </div>
+
+  <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:border-emerald-500/50 transition-colors cursor-default">
+    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Disbursed Capital</span>
+    <div class="text-3xl font-bold font-mono text-emerald-400 mt-2">{{ metrics.disbursed | currency:'USD' }}</div>
+    <div class="text-xs text-slate-500 mt-2">Directly paid to logistics operators</div>
+    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
+  </div>
+
+  <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:border-purple-500/50 transition-colors cursor-default">
+    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Platform Service Fee (3%)</span>
+    <div class="text-3xl font-bold font-mono text-purple-400 mt-2">{{ metrics.fees | currency:'USD' }}</div>
+    <div class="text-xs text-slate-500 mt-2">Retained operations engine overhead</div>
+    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
+  </div>
+
+</div>

@@ -1,0 +1,35 @@
+<div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl h-fit">
+  <h3 class="text-md font-bold uppercase tracking-wider text-cyan-400 border-b border-slate-800 pb-3 mb-4">Initialize Forward Freight Tender</h3>
+  
+  <form (ngSubmit)="broadcastTender()" class="space-y-4">
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-1">Freight Manifest Description</label>
+      <input type="text" [(ngModel)]="tenderData.title" name="title" placeholder="Heavy Industrial Gearing Array" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400 text-slate-100 placeholder:text-slate-600">
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Payload Weight (kg)</label>
+        <input type="number" [(ngModel)]="tenderData.weight" name="weight" placeholder="4200" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400 text-slate-100 placeholder:text-slate-600">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Auction Window (Min)</label>
+        <input type="number" [(ngModel)]="tenderData.duration" name="duration" placeholder="45" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400 text-slate-100 placeholder:text-slate-600">
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-1">Supply-Chain Source Node (Origin)</label>
+      <input type="text" [(ngModel)]="tenderData.origin" name="origin" placeholder="Barasat Hub Complex, Kolkata" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400 text-slate-100 placeholder:text-slate-600">
+    </div>
+    
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-1">Delivery Destination Vector</label>
+      <input type="text" [(ngModel)]="tenderData.destination" name="destination" placeholder="Coast Distribution Terminal" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400 text-slate-100 placeholder:text-slate-600">
+    </div>
+    
+    <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-lg shadow-cyan-500/10">
+      Broadcast To Global Network
+    </button>
+  </form>
+</div>

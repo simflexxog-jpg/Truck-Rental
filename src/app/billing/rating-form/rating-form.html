@@ -1,0 +1,49 @@
+<div class="max-w-2xl bg-slate-950 border border-slate-800 p-8 rounded-2xl shadow-xl mt-8">
+  <div class="border-b border-slate-800 pb-4 mb-6 flex justify-between items-end">
+    <div>
+      <h3 class="text-md font-bold uppercase tracking-wider text-slate-200">Mission Debriefing</h3>
+      <p class="text-xs text-slate-400 mt-1">Submit feedback for contract run #LGT-8921</p>
+    </div>
+    <span class="text-[10px] uppercase font-bold text-cyan-500 bg-cyan-950/40 px-2 py-1 rounded border border-cyan-900">
+      Trust Metrics Node
+    </span>
+  </div>
+
+  <form (ngSubmit)="submitReview()" class="space-y-6">
+    
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Operator Performance Index</label>
+      <div class="flex items-center space-x-2">
+        
+        <button *ngFor="let star of stars" 
+                type="button" 
+                (click)="setRating(star)"
+                (mouseenter)="setHover(star)"
+                (mouseleave)="clearHover()"
+                [ngClass]="(hoveredRating || currentRating) >= star ? 'text-amber-400 scale-110' : 'text-slate-700'"
+                class="transition-all duration-200 transform hover:scale-125 focus:outline-none">
+          <svg class="w-8 h-8 fill-current drop-shadow-md" viewBox="0 0 20 20">
+            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+          </svg>
+        </button>
+        
+        <span *ngIf="currentRating > 0" class="text-xs font-mono font-bold text-amber-400 bg-amber-950/40 border border-amber-800/50 px-2.5 py-1 rounded-md ml-4 animate-fade-in">
+          {{ currentRating }}.0 / 5.0
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Detailed Operational Assessment Log</label>
+      <textarea [(ngModel)]="feedbackText" 
+                name="feedback"
+                rows="4" 
+                placeholder="Describe precision of delivery timing, cargo orientation handling safety, and communication quality variables..." 
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-slate-100 placeholder:text-slate-600 transition-all"></textarea>
+    </div>
+
+    <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/10 transition-all transform active:scale-[0.99]">
+      Commit Review to Distributed Network
+    </button>
+  </form>
+</div>

@@ -1,0 +1,29 @@
+<div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl">
+  <div class="mb-6 border-b border-slate-800 pb-4">
+    <h3 class="text-md font-bold text-slate-200 uppercase tracking-wider">Identified Compatible Waypoints</h3>
+    <p class="text-xs text-slate-400 mt-1">Platform automatically filters payloads strictly within 2 km of your active path.</p>
+  </div>
+  
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    
+    <div *ngFor="let job of availableJobs" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-5 rounded-xl transition-all relative overflow-hidden group shadow-lg">
+      <div class="absolute top-0 right-0 bg-emerald-500/10 text-emerald-400 border-l border-b border-emerald-500/20 text-[10px] px-3 py-1.5 font-mono rounded-bl-lg font-semibold tracking-wide">
+        Pick: +{{ job.pickupDetour }}km | Drop: +{{ job.dropoffDetour }}km
+      </div>
+      
+      <h4 class="text-sm font-bold text-slate-200 mb-1 group-hover:text-cyan-400 transition-colors pr-40">{{ job.title }}</h4>
+      <p class="text-xs text-slate-400 mb-4">Weight: {{ job.weight }}kg | Dim: {{ job.dimensions }}</p>
+      
+      <div class="flex items-center justify-between border-t border-slate-800/80 pt-4 mt-2">
+        <div>
+          <span class="block text-[10px] uppercase text-slate-500 tracking-wider">Leading Ceiling Target</span>
+          <span class="text-sm font-mono font-bold text-emerald-400">{{ job.currentCeiling | currency:'USD' }}</span>
+        </div>
+        <button (click)="submitUnderbid(job)" class="bg-slate-950 border border-slate-700 hover:bg-cyan-500 hover:text-slate-950 hover:border-cyan-500 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-lg transition-all uppercase tracking-wider shadow-md">
+          Submit Underbid
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

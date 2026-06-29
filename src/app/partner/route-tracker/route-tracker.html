@@ -1,0 +1,51 @@
+<div class="space-y-4">
+  <!-- Route Header -->
+  <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-l-cyan-500">
+    <div>
+      <span class="text-[10px] uppercase font-bold tracking-widest text-cyan-400 bg-cyan-950/50 px-2 py-1 rounded border border-cyan-800/50">Current Vector Stream</span>
+      <h3 class="text-lg font-bold text-slate-200 mt-3">Route Details — {{ currentRoute.id }}</h3>
+      <p class="text-xs text-slate-400 mt-1">Path: {{ currentRoute.origin }} → {{ currentRoute.destination }}</p>
+    </div>
+    
+    <div class="bg-slate-900 px-5 py-4 rounded-xl border border-slate-800 text-right shadow-inner">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-end gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        Add-On Guardrail Filter
+      </div>
+      <div class="text-sm font-bold text-emerald-400 mt-1">Strict ≤ 2.0 km Deviation Lockout</div>
+    </div>
+  </div>
+
+  <!-- Leaflet Map -->
+  <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl shadow-xl">
+    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Live Route Map</h4>
+    <div class="w-full h-96 bg-slate-900 rounded-xl relative overflow-hidden border border-slate-800 shadow-lg">
+      <div #mapContainer id="map-container" class="w-full h-full"></div>
+    </div>
+  </div>
+
+  <!-- Routes List -->
+  <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl shadow-xl">
+    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Active Routes</h4>
+    <div class="space-y-2 max-h-48 overflow-y-auto">
+      <div
+        *ngFor="let route of routes"
+        (click)="selectRoute(route.id)"
+        [class.border-cyan-500]="selectedRouteId === route.id"
+        class="bg-slate-900 border border-slate-800 p-3 rounded-lg cursor-pointer hover:border-cyan-500/50 transition-all"
+      >
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-bold text-slate-200">{{ route.id }}</p>
+            <p class="text-[10px] text-slate-500 mt-1">{{ route.origin }} → {{ route.destination }}</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Status: <span [ngClass]="{'text-emerald-400': route.status === 'in_transit', 'text-blue-400': route.status === 'pending', 'text-gray-400': route.status === 'completed'}">{{ statusLabel(route.status) }}</span></p>
+          </div>
+          <span class="text-[10px] font-mono text-cyan-400 bg-slate-800 px-2 py-1 rounded">{{ route.distance }}km</span>
+        </div>
+      </div>
+      <div *ngIf="routes.length === 0" class="text-center py-4">
+        <p class="text-xs text-slate-500">No routes available</p>
+      </div>
+    </div>
+  </div>
+</div>

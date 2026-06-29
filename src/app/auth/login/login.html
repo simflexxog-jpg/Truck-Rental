@@ -1,0 +1,67 @@
+<div class="min-h-[80vh] flex items-center justify-center p-4">
+  <div class="w-full max-w-md bg-slate-950 border border-slate-800 p-8 rounded-2xl shadow-2xl relative overflow-hidden group">
+    
+    <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-all duration-500 pointer-events-none"></div>
+    
+    <div class="text-center mb-8 relative z-10">
+      <h3 class="text-2xl font-bold tracking-tight text-white">Central Operations Entry</h3>
+      <p class="text-xs text-slate-400 mt-1">Select credential clearance vector to authenticate</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 mb-6 relative z-10">
+      <button type="button" 
+              (click)="setRole('customer')" 
+              [ngClass]="selectedRole === 'customer' ? 'bg-cyan-500 text-slate-950 shadow-md font-semibold' : 'text-slate-400 hover:text-white'" 
+              class="py-2 text-xs rounded-lg transition-all uppercase tracking-wider">
+        Customer Portal
+      </button>
+      <button type="button" 
+              (click)="setRole('partner')" 
+              [ngClass]="selectedRole === 'partner' ? 'bg-cyan-500 text-slate-950 shadow-md font-semibold' : 'text-slate-400 hover:text-white'" 
+              class="py-2 text-xs rounded-lg transition-all uppercase tracking-wider">
+        Logi-Partner
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="space-y-4 relative z-10">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Secure Link Identifier (Email)</label>
+        <input type="email" 
+               [(ngModel)]="credentials.email" 
+               name="email" 
+               placeholder="operator@logi-core.io" 
+               required
+               class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-cyan-400 text-sm transition-colors placeholder:text-slate-600">
+      </div>
+      
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Cryptographic Keyphrase</label>
+        <input type="password" 
+               [(ngModel)]="credentials.password" 
+               name="password" 
+               placeholder="••••••••" 
+               required
+               class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-cyan-400 text-sm transition-colors placeholder:text-slate-600">
+      </div>
+      
+      <div class="flex justify-between items-center mt-2 mb-4">
+        <label class="flex items-center text-xs text-slate-400 cursor-pointer hover:text-slate-300">
+          <input type="checkbox" class="mr-2 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500">
+          Keep connection open
+        </label>
+        <a href="#" class="text-xs text-cyan-500 hover:text-cyan-400 transition-colors">Bypass recovery?</a>
+      </div>
+
+      <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 py-3 rounded-xl text-sm font-bold tracking-wide uppercase transition-all shadow-lg shadow-cyan-500/20 transform active:scale-[0.98]">
+        Establish Connection
+      </button>
+    </form>
+    
+    <div class="mt-6 text-center border-t border-slate-800 pt-4 relative z-10">
+      <p class="text-xs text-slate-400">
+        New to the network? 
+        <a routerLink="/register" class="text-cyan-400 hover:text-cyan-300 font-semibold ml-1 transition-colors">Request Access</a>
+      </p>
+    </div>
+  </div>
+</div>

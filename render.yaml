@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: truck-rental
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run serve:ssr:Truck-Rental
+    envVars:
+      - key: NODE_ENV
+        value: production

@@ -1,0 +1,108 @@
+<section class="grid gap-6 lg:grid-cols-2">
+  <div class="space-y-4">
+    <div class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div>
+        <h3 class="text-lg font-semibold text-slate-900">Partner Tenders</h3>
+        <p class="text-sm text-slate-500">Select available orders and place your best bid.</p>
+      </div>
+      <label class="flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" [(ngModel)]="filterOpen" class="h-4 w-4 rounded border-slate-300 text-cyan-600" />
+        Only open tenders
+      </label>
+    </div>
+
+    <div *ngIf="!displayedTenders || displayedTenders.length === 0" class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+      No tenders available.
+    </div>
+
+    <div class="space-y-4">
+      <article *ngFor="let t of displayedTenders" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-cyan-500 hover:shadow-md">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h4 class="text-base font-semibold text-slate-900">{{ t.title }}</h4>
+            <p class="mt-1 text-sm text-slate-500">{{ t.origin }} → {{ t.destination }}</p>
+            <p class="text-sm text-slate-500">Weight: {{ t.weight }} kg • Auction window: {{ t.duration }} mins</p>
+            <p class="text-sm text-slate-500">
+              <ng-container *ngIf="remainingSeconds(t) > 0; else closedTimer">
+                Auction ends in <app-timer [targetTime]="t.auctionEnd"></app-timer>
+              </ng-container>
+              <ng-template #closedTimer>
+                <span class="text-rose-500">Auction closed</span>
+              </ng-template>
+            </p>
+          </div>
+          <div class="text-right">
+            <span class="text-sm text-slate-500">Status</span>
+            <div class="mt-1 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">{{ t.status }}</div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-sm text-slate-700">
+            <span class="font-medium">Budget:</span> ${{ t.budget }}
+            <span *ngIf="t.bids && t.bids.length" class="ml-3">Lowest bid: ${{ lowestBid(t) }}</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button class="rounded-full border border-cyan-500 bg-cyan-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-600" (click)="selectTender(t)">View</button>
+            <button class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-cyan-500 hover:text-cyan-600" (click)="quickBid(t)">Quick Bid</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <aside *ngIf="selectedTender" class="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <h3 class="text-lg font-semibold text-slate-900">Bid on: {{ selectedTender.title }}</h3>
+      <p class="mt-2 text-sm text-slate-500">{{ selectedTender.origin }} → {{ selectedTender.destination }}</p>
+    </div>
+
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <p class="text-sm text-slate-500">Current Budget</p>
+        <p class="mt-2 text-xl font-semibold text-slate-900">${{ selectedTender.budget }}</p>
+      </div>
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <p class="text-sm text-slate-500">Lowest Bid</p>
+        <p class="mt-2 text-xl font-semibold text-slate-900">${{ lowestBid(selectedTender) || 'N/A' }}</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <input class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-cyan-500 focus:outline-none" placeholder="Enter your bid amount" [(ngModel)]="bidAmount" />
+      <button class="rounded-2xl bg-cyan-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700" (click)="placeBid()" [disabled]="loading">{{ loading ? 'Placing...' : 'Place Bid' }}</button>
+    </div>
+
+    <div class="rounded-3xl bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-800">Bid activity</h4>
+      <div *ngIf="selectedTender.bids && selectedTender.bids.length; else noBidActivity" class="mt-3 space-y-3 text-sm text-slate-700">
+        <div *ngFor="let b of selectedTender.bids" class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="font-medium text-slate-900">{{ b.partnerName }}</div>
+            <div class="text-slate-500">${{ b.bidAmount }} • {{ b.createdAt | date:'short' }}</div>
+          </div>
+          <button *ngIf="b.partnerId !== partnerId" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-700 transition hover:border-cyan-500 hover:text-cyan-600" (click)="placeCounterBid(b)">Counter</button>
+        </div>
+      </div>
+      <ng-template #noBidActivity>
+        <p class="mt-3 text-sm text-slate-500">No bids have been placed for this tender yet.</p>
+      </ng-template>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-800">My bids</h4>
+      <div *ngIf="myBids().length === 0" class="mt-3 text-sm text-slate-500">You have not placed any bids yet.</div>
+      <ul *ngIf="myBids().length" class="mt-3 space-y-2 text-sm text-slate-700">
+        <li *ngFor="let mb of myBids()" class="rounded-2xl bg-white p-3 border border-slate-200">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="font-medium">Tender: {{ mb.tenderId }}</div>
+              <div class="text-slate-500">${{ mb.bidAmount }} • {{ mb.createdAt | date:'short' }}</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </aside>
+</section>
+*** End Patch

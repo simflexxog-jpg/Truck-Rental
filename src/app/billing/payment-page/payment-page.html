@@ -1,0 +1,59 @@
+<div class="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
+  <div>
+    <h2 class="text-2xl font-semibold text-slate-900">Payment Details</h2>
+    <p class="mt-2 text-sm text-slate-500">Confirm order payment for your selected tender.</p>
+  </div>
+
+  <div *ngIf="tender" class="grid gap-4 sm:grid-cols-2">
+    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+      <h3 class="text-sm uppercase tracking-wide text-slate-500">Tender</h3>
+      <p class="mt-2 text-lg font-semibold text-slate-900">{{ tender.title }}</p>
+      <p class="mt-2 text-sm text-slate-600">{{ tender.origin }} → {{ tender.destination }}</p>
+      <p class="mt-4 text-sm text-slate-500">Auction window: {{ tender.duration }} mins</p>
+      <p class="mt-1 text-sm text-slate-500">Ends at: {{ tender.auctionEnd | date:'medium' }}</p>
+      <p class="mt-1 text-sm text-slate-500" *ngIf="remainingSeconds() > 0">
+        Time left: <app-timer [targetTime]="tender.auctionEnd"></app-timer>
+      </p>
+      <p class="mt-1 text-sm text-rose-500" *ngIf="remainingSeconds() === 0">Auction has ended</p>
+    </div>
+    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+      <h3 class="text-sm uppercase tracking-wide text-slate-500">Amount</h3>
+      <p class="mt-2 text-3xl font-semibold text-cyan-600">${{ paymentAmount | number:'1.2-2' }}</p>
+      <p class="mt-2 text-sm text-slate-500">Payable amount for the selected order.</p>
+    </div>
+  </div>
+
+  <form class="space-y-4" (ngSubmit)="payNow()">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-slate-700">Card Number</label>
+        <input type="text" [(ngModel)]="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-cyan-500 focus:outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Expiry</label>
+        <input type="text" [(ngModel)]="expiry" name="expiry" placeholder="MM/YY" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-cyan-500 focus:outline-none" />
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="block text-sm font-medium text-slate-700">CVV</label>
+        <input type="password" [(ngModel)]="cvv" name="cvv" placeholder="123" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-cyan-500 focus:outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Billing Note</label>
+        <input type="text" [(ngModel)]="billingNote" name="billingNote" placeholder="Optional reference" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-cyan-500 focus:outline-none" />
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">{{ errorMessage }}</div>
+
+    <button type="submit" class="w-full rounded-2xl bg-cyan-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700" [disabled]="isProcessing">{{ isProcessing ? 'Processing...' : 'Pay Now' }}</button>
+  </form>
+
+  <div *ngIf="paymentSuccess" class="rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+    <p class="font-semibold">Payment successful!</p>
+    <p class="mt-2">Transaction ID: {{ transaction?.id }}</p>
+    <button class="mt-4 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white" (click)="goHome()">Return to dashboard</button>
+  </div>
+</div>

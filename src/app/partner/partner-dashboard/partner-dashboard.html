@@ -1,0 +1,36 @@
+<div class="space-y-8 pb-12">
+  <app-route-tracker></app-route-tracker>
+  <app-add-on-job-board></app-add-on-job-board>
+
+  <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <div>
+        <h3 class="text-lg font-semibold text-slate-900">Pending Orders</h3>
+        <p class="text-sm text-slate-500">Orders assigned to you and awaiting completion.</p>
+      </div>
+    </div>
+
+    <div *ngIf="pendingOrders.length > 0; else noPendingOrders" class="space-y-4">
+      <article *ngFor="let order of pendingOrders" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="font-semibold text-slate-900">{{ order.title }}</div>
+            <div class="text-sm text-slate-500">{{ order.origin }} → {{ order.destination }}</div>
+            <div class="text-xs text-slate-500 mt-1">Auction ends in <app-timer [targetTime]="order.auctionEnd"></app-timer></div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-slate-500">Budget</div>
+            <div class="text-lg font-semibold text-slate-900">${{ order.budget }}</div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #noPendingOrders>
+      <p class="text-sm text-slate-500">No pending orders assigned to you yet.</p>
+    </ng-template>
+  </section>
+
+  <app-partner-tenders></app-partner-tenders>
+  <app-live-chat [tenderId]="chatTenderId"></app-live-chat>
+</div>

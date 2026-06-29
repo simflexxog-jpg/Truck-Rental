@@ -1,0 +1,44 @@
+<div class="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl grid grid-cols-1 md:grid-cols-4 h-[400px] overflow-hidden">
+  
+  <div class="border-r border-slate-800/80 p-4 bg-slate-950/80 hidden md:block">
+    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Secured Contracts</h4>
+    <div class="space-y-2">
+      <div class="p-3 bg-slate-900 border border-cyan-500/30 rounded-xl cursor-pointer shadow-inner">
+        <div class="text-xs font-bold text-slate-200 flex justify-between">
+          Owner #4092 <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1"></span>
+        </div>
+        <div class="text-[10px] text-slate-400 truncate mt-1">LGT-8921 Active</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="md:col-span-3 flex flex-col h-full bg-slate-900/30">
+    <div class="p-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700">O</div>
+        <span class="text-xs font-bold tracking-wide text-slate-300">Channel Vector: Freight Owner #4092</span>
+      </div>
+      <span class="text-[10px] bg-slate-900 border border-slate-800 px-2 py-1 rounded text-slate-400 font-mono">Encrypted 256-bit</span>
+    </div>
+    
+    <div #scrollMe class="flex-1 p-5 overflow-y-auto space-y-4 text-xs scroll-smooth">
+      
+      <div *ngFor="let msg of messages" class="flex" [ngClass]="msg.sender === 'me' || msg.sender === 'You' ? 'justify-end' : 'justify-start'">
+        
+        <div *ngIf="msg.sender !== 'me' && msg.sender !== 'You'" class="bg-slate-950/80 border border-slate-700 p-3 rounded-xl rounded-tl-none text-slate-300 max-w-[70%] shadow-md">
+          {{ msg.text }}
+        </div>
+        
+        <div *ngIf="msg.sender === 'me' || msg.sender === 'You'" class="bg-cyan-950/40 border border-cyan-800/50 p-3 rounded-xl rounded-tr-none text-cyan-100 max-w-[70%] text-right shadow-md">
+          {{ msg.text }}
+        </div>
+
+      </div>
+    </div>
+
+    <div class="p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-3">
+      <input type="text" [(ngModel)]="messageInput" (keyup.enter)="sendMessage()" placeholder="Transmit direct messaging frame..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 placeholder:text-slate-600 transition-colors">
+      <button (click)="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-lg">Send</button>
+    </div>
+  </div>
+</div>
