@@ -5,6 +5,8 @@ import { CustomerDashboardComponent } from './customer/customer-dashboard/custom
 import { PartnerDashboardComponent } from './partner/partner-dashboard/partner-dashboard';
 import { BillingDashboardComponent } from './billing/billing-dashboard/billing-dashboard';
 import { PaymentPageComponent } from './billing/payment-page/payment-page';
+import { CustomerGuard } from './guards/customer.guard';
+import { PartnerGuard } from './guards/partner.guard';
 
 export const routes: Routes = [
   // Default redirect to login
@@ -15,8 +17,8 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   
   // Core Operational Dashboards
-  { path: 'customer', component: CustomerDashboardComponent },
-  { path: 'partner', component: PartnerDashboardComponent },
+  { path: 'customer', component: CustomerDashboardComponent, canActivate: [CustomerGuard] },
+  { path: 'partner', component: PartnerDashboardComponent, canActivate: [PartnerGuard] },
   { path: 'billing', component: BillingDashboardComponent },
   { path: 'billing/pay/:tenderId', component: PaymentPageComponent },
   

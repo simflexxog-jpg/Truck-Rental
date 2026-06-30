@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -10,11 +11,12 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.html'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   selectedRole: 'customer' | 'partner' = 'customer';
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  lockRole = false;
   
   registerData = {
     entityName: '',
@@ -23,9 +25,18 @@ export class RegisterComponent {
     confirmPassword: ''
   };
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    const role = this.route.snapshot.queryParamMap.get('role');
+    if (role === 'partner' || role === 'customer') {
+      this.selectedRole = role as 'customer' | 'partner';
+      this.lockRole = true;
+    }
+  }
 
   setRole(role: 'customer' | 'partner') {
+    if (this.lockRole) return;
     this.selectedRole = role;
   }
 
@@ -57,11 +68,11 @@ export class RegisterComponent {
       this.selectedRole
     ).subscribe({
       next: (user) => {
-        this.successMessage = `Registration successful! Welcome ${user.entityName}`;
+        this.successMessage = `Registration successful! You may now login.`;
+        // Redirect to login page for the same role so the user explicitly logs in
         setTimeout(() => {
-          const route = user.role === 'customer' ? '/customer' : '/partner';
-          this.router.navigate([route]);
-        }, 2000);
+          this.router.navigate(['/login'], { queryParams: { role: this.selectedRole } });
+        }, 1200);
         this.isLoading = false;
       },
       error: (err) => {

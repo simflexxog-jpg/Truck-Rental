@@ -27,6 +27,7 @@
     "leaflet": "^1.9.4",
     "ngx-leaflet": "^0.0.16",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.7.2",
     "tslib": "^2.3.0",
     "ws": "^8.21.0"
   },

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouteService } from '../../services/route.service';
 import { TenderService } from '../../services/tender.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-add-on-job-board',
@@ -11,8 +12,16 @@ import { TenderService } from '../../services/tender.service';
 })
 export class AddOnJobBoardComponent implements OnInit {
   availableJobs: any[] = [];
+  partnerId = 'partner_demo_001';
+  partnerName = 'Demo Partner';
 
-  constructor(private routeService: RouteService, private tenderService: TenderService) {}
+  constructor(private routeService: RouteService, private tenderService: TenderService, private auth: AuthService) {
+    const user = this.auth.getCurrentUser();
+    if (user) { this.partnerId = user.id || this.partnerId; this.partnerName = user.entityName || this.partnerName; }
+    this.auth.currentUser$.subscribe(u => {
+      if (u) { this.partnerId = u.id; this.partnerName = u.entityName; }
+    });
+  }
 
   ngOnInit() {
     this.routeService.addOnJobs$.subscribe(jobs => {
@@ -26,19 +35,28 @@ export class AddOnJobBoardComponent implements OnInit {
     const amount = parseFloat(amountStr);
     if (isNaN(amount) || amount <= 0) { alert('Invalid amount'); return; }
 
-    // Use tender service if available; otherwise show confirmation
-    // We'll create a lightweight tender placement using global window API to find TenderService if bootstrapped
-    // if job has a linked tenderId, use it; otherwise create a tender and then place bid
     const tenderId = job.tenderId || job.id || null;
-    const partnerId = 'partner_demo_001';
-    const partnerName = 'Demo Partner';
-    if (tenderId) {
-      this.tenderService.placeBid(tenderId, partnerId, partnerName, amount).subscribe({
-        next: (bid) => alert(`Bid ${bid.id} submitted for ${job.title} at $${amount}`),
-        error: (err) => alert('Failed to submit bid')
-      });
-    } else {
+    if (!tenderId) {
       alert(`No tender id available for job ${job.title}.`);
+      return;
     }
+
+    const tender = this.tenderService.getTenderById(tenderId);
+    if (tender) {
+      if (amount >= tender.budget) {
+        return alert(`Bid must be less than the budget ($${tender.budget}).`);
+      }
+      const currentLowest = tender.bids.length ? Math.min(...tender.bids.map((b: any) => b.bidAmount)) : null;
+      if (currentLowest !== null && amount >= currentLowest) {
+        return alert(`Counter bid must be lower than the current lowest bid ($${currentLowest}).`);
+      }
+    }
+
+    const partnerId = this.partnerId;
+    const partnerName = this.partnerName;
+    this.tenderService.placeBid(tenderId, partnerId, partnerName, amount).subscribe({
+      next: (bid) => alert(`Bid ${bid.id} submitted for ${job.title} at $${amount}`),
+      error: (err) => alert(err?.error?.error || err?.message || 'Failed to submit bid')
+    });
   }
 }

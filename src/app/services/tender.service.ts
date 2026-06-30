@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { BillingService } from './billing.service';
@@ -193,7 +193,39 @@ export class TenderService {
     return this.tenders.value.find(t => t.id === id);
   }
 
+  private getLowestBid(tender: Tender): number | null {
+    if (!tender.bids || tender.bids.length === 0) return null;
+    return Math.min(...tender.bids.map(b => b.bidAmount));
+  }
+
+  public getBidValidationError(tender: Tender, bidAmount: number): string | null {
+    if (isNaN(bidAmount) || bidAmount <= 0) {
+      return 'Enter a valid bid amount.';
+    }
+
+    if (bidAmount >= tender.budget) {
+      return `Bid must be less than the budget ($${tender.budget}).`;
+    }
+
+    const lowestBid = this.getLowestBid(tender);
+    if (lowestBid !== null && bidAmount >= lowestBid) {
+      return `Bid must be lower than the current lowest bid ($${lowestBid}).`;
+    }
+
+    return null;
+  }
+
   placeBid(tenderId: string, partnerId: string, partnerName: string, bidAmount: number): Observable<Bid> {
+    const tender = this.getTenderById(tenderId);
+    if (!tender) {
+      return throwError(() => new Error('Tender not found.'));
+    }
+
+    const validationError = this.getBidValidationError(tender, bidAmount);
+    if (validationError) {
+      return throwError(() => new Error(validationError));
+    }
+
     // call backend
     return this.http.post<Bid>(`${API_BASE}/tenders/${tenderId}/bids`, { partnerId, partnerName, bidAmount }).pipe(
       tap((bid) => {
@@ -206,9 +238,16 @@ export class TenderService {
         }
       }),
       catchError(err => {
+        if (err.status === 400 || err.error?.error) {
+          return throwError(() => err);
+        }
         // fallback to local
         const tender = this.getTenderById(tenderId);
-        if (!tender) return of(null as any);
+        if (!tender) return throwError(() => new Error('Tender not found for local bid fallback.'));
+        const localValidationError = this.getBidValidationError(tender, bidAmount);
+        if (localValidationError) {
+          return throwError(() => new Error(localValidationError));
+        }
         const bid: Bid = { id: 'bid_' + Date.now(), tenderId, partnerId, partnerName, bidAmount, createdAt: new Date() };
         tender.bids.push(bid);
         const allTenders = this.tenders.value;

@@ -1,0 +1,4 @@
+/* App-level layout tweaks */
+.main-view{padding:1.25rem}
+.top-hero{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.small-muted{color:rgba(230,238,248,0.6);font-size:0.9rem}

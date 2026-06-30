@@ -21,7 +21,7 @@ export class AuthService {
 
   constructor() {}
 
-  register(entityName: string, email: string, password: string, role: 'customer' | 'partner'): Observable<User> {
+  register(entityName: string, email: string, password: string, role: 'customer' | 'partner', autoLogin: boolean = false): Observable<User> {
     const newUser: User = {
       id: 'user_' + Date.now(),
       email,
@@ -37,10 +37,13 @@ export class AuthService {
       localStorage.setItem('users', JSON.stringify(users));
     }
 
-    this.currentUser.next(newUser);
-    this.isAuthenticated.next(true);
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem('currentUser', JSON.stringify(newUser));
+    // Only set as current user if explicitly requested (avoid accidental cross-role auto-login)
+    if (autoLogin) {
+      this.currentUser.next(newUser);
+      this.isAuthenticated.next(true);
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+      }
     }
 
     return new Observable(subscriber => {
@@ -49,10 +52,10 @@ export class AuthService {
     });
   }
 
-  login(email: string, password: string): Observable<User | null> {
+  login(email: string, password: string, role?: 'customer' | 'partner'): Observable<User | null> {
     return new Observable(subscriber => {
       const users = this.getAllUsers();
-      const user = users.find(u => u.email === email && u.password === password);
+      const user = users.find(u => u.email === email && u.password === password && (role ? u.role === role : true));
 
       if (user) {
         const { password: _, ...userWithoutPassword } = user;

@@ -2,18 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>TruckRental</title>
+  <title>Renta — Truck Rental Dashboard</title>
   <base href="/">
+  <!-- Short description for SEO and sharing -->
+  <meta name="description" content="Renta — reverse-auction freight marketplace and truck rental dashboard for customers and transport partners.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="msapplication-TileColor" content="#0f172a">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous" />
+  <script>
+    // Ensure theme-color exists and provide a fallback for browsers that ignore meta[name="theme-color"].
+    // For Firefox/Opera on some platforms, the meta tag is ignored — we set a CSS variable so the app UI
+    // can read it and style the top chrome consistently. The manifest provides PWA theme_color for installers.
+    (function() {
+      const color = '#0f172a';
+      let meta = document.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        document.head.appendChild(meta);
+      }
+      meta.content = color;
+
+      // If the browser ignores theme-color (Firefox/Opera), expose the color via CSS variable so app
+      // components can use it for top bars / status styling.
+      document.documentElement.style.setProperty('--app-theme', color);
+
+      // Optional: detect user agent and add a class for targeted CSS tweaks
+      try {
+        const ua = navigator.userAgent || '';
+        if (/Firefox|Opera/i.test(ua)) {
+          document.documentElement.classList.add('ua-firefox-opera');
+        }
+      } catch (e) {
+        // ignore UA read errors in strict environments
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
+  <noscript>
+    <div style="padding:1rem;background:#fff3cd;color:#856404;border:1px solid #ffeeba;margin:1rem;border-radius:4px">
+      This application requires JavaScript to run. Please enable JavaScript in your browser.
+    </div>
+  </noscript>
   
   <!-- Leaflet JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

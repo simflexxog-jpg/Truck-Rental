@@ -54,6 +54,19 @@ router.post('/:id/bids', (req, res) => {
   const tender = data.tenders.find(t => t.id === id);
   if (!tender) return res.status(404).json({ error: 'Tender not found' });
 
+  if (typeof bidAmount !== 'number' || Number.isNaN(bidAmount) || bidAmount <= 0) {
+    return res.status(400).json({ error: 'Bid amount must be a positive number.' });
+  }
+
+  if (bidAmount >= tender.budget) {
+    return res.status(400).json({ error: 'Bid must be less than the tender budget.' });
+  }
+
+  const currentLowest = tender.bids.length ? Math.min(...tender.bids.map(b => b.bidAmount)) : null;
+  if (currentLowest !== null && bidAmount >= currentLowest) {
+    return res.status(400).json({ error: 'Counter bid must be lower than the current lowest bid.' });
+  }
+
   const bid = { id: 'bid_' + Date.now(), tenderId: id, partnerId, partnerName, bidAmount, createdAt: new Date() };
   tender.bids.push(bid);
 
