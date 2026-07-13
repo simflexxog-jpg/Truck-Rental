@@ -24,6 +24,10 @@ export class CustomerDashboardComponent implements OnInit {
   ngOnInit() {
     this.tenderService.tenders$.subscribe(list => {
       this.tenders = list || [];
+      if (this.selectedTenderId && !this.tenders.some(t => t.id === this.selectedTenderId)) {
+        this.selectedTenderId = null;
+        return;
+      }
       if (!this.selectedTenderId && this.tenders.length) {
         this.selectTender(this.tenders[0].id);
       }
@@ -54,5 +58,9 @@ export class CustomerDashboardComponent implements OnInit {
 
   payOrder(order: Tender) {
     this.router.navigate(['/billing/pay', order.id]);
+  }
+
+  delistOrder(order: Tender) {
+    this.tenderService.delistTender(order.id);
   }
 }

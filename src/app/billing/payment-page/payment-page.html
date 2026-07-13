@@ -18,7 +18,7 @@
     </div>
     <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
       <h3 class="text-sm uppercase tracking-wide text-slate-500">Amount</h3>
-      <p class="mt-2 text-3xl font-semibold text-cyan-600">${{ paymentAmount | number:'1.2-2' }}</p>
+      <p class="mt-2 text-3xl font-semibold text-cyan-600">{{ paymentAmount | currency:'INR':'symbol':'1.2-2' }}</p>
       <p class="mt-2 text-sm text-slate-500">Payable amount for the selected order.</p>
     </div>
   </div>

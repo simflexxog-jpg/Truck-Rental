@@ -9,7 +9,7 @@ function loadData() { try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')
 function saveData(data) { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8'); }
 
 function buildSiteAwarePrompt(text) {
-  return `You are LogiAI, the smart assistant for Renta Truck Rental. Help users with tender auctions, bid strategy, partner matching, delivery routing, billing, and account questions. Keep answers concise, practical, and specific to this platform. User question: ${text}`;
+  return `You are RentaAI, the smart assistant for Renta Truck Rental. Help users with tender auctions, bid strategy, partner matching, delivery routing, billing, and account questions. Keep answers concise, practical, and specific to this platform. User question: ${text}`;
 }
 
 function generateLocalReply(text) {
@@ -41,10 +41,10 @@ async function callGroq(prompt) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
     },
-    body: JSON.stringify({
+      body: JSON.stringify({
       model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: 'You are LogiAI, a helpful logistics assistant for Renta Truck Rental.' },
+        { role: 'system', content: 'You are RentaAI, a helpful logistics assistant for Renta Truck Rental.' },
         { role: 'user', content: prompt }
       ],
       temperature: 0.6,

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TenderService, Tender, Bid } from '../../services/tender.service';
 import { Router } from '@angular/router';
@@ -10,7 +10,7 @@ import { TimerComponent } from '../../shared/timer/timer';
   imports: [CommonModule, TimerComponent],
   templateUrl: './tender-detail.html'
 })
-export class TenderDetailComponent implements OnInit {
+export class TenderDetailComponent implements OnInit, OnChanges {
   @Input() tenderId!: string;
   tender?: Tender;
   isLoading = false;
@@ -19,9 +19,18 @@ export class TenderDetailComponent implements OnInit {
   constructor(private tenderService: TenderService, private router: Router) {}
 
   ngOnInit() {
-    if (this.tenderId) {
-      this.tender = this.tenderService.getTenderById(this.tenderId);
+    this.syncTender();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['tenderId']) {
+      this.syncTender();
     }
+  }
+
+  private syncTender() {
+    this.tender = this.tenderId ? this.tenderService.getTenderById(this.tenderId) : undefined;
+    this.message = '';
   }
 
   accept(bid: Bid) {

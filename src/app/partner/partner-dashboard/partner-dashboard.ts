@@ -46,7 +46,7 @@ export class PartnerDashboardComponent implements OnInit {
   }
 
   private recomputePending() {
-    this.pendingOrders = (this.tenders || []).filter(t => t.status === 'assigned' && t.assignedPartnerId === this.partnerId);
+    this.pendingOrders = (this.tenders || []).filter(t => t.status === 'assigned' && t.paymentApproved && t.assignedPartnerId === this.partnerId);
     this.chatTenderId = this.pendingOrders.length > 0 ? this.pendingOrders[0].id : undefined;
   }
 }

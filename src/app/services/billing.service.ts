@@ -40,8 +40,33 @@ export class BillingService {
   public metrics$ = this.metrics.asObservable();
 
   private API_BASE = 'http://localhost:3000/api';
+  private refreshTimer?: number;
+  private readonly refreshIntervalMs = 5000;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.startAutoRefresh();
+  }
+
+  private startAutoRefresh(): void {
+    if (typeof window === 'undefined' || this.refreshTimer) {
+      return;
+    }
+
+    this.refreshTransactions();
+    this.refreshTimer = window.setInterval(() => {
+      this.refreshTransactions();
+    }, this.refreshIntervalMs);
+  }
+
+  private refreshTransactions(): void {
+    this.http.get<Transaction[]>(`${this.API_BASE}/billing`).pipe(
+      catchError(() => of(this.transactions.value))
+    ).subscribe(transactions => {
+      if (Array.isArray(transactions)) {
+        this.transactions.next(transactions);
+      }
+    });
+  }
 
   createTransaction(tenderId: string, operator: string, amount: number, status: 'cleared' | 'escrow' | 'pending' = 'escrow'): Observable<Transaction> {
     // Call backend create endpoint

@@ -17,7 +17,7 @@
       <div class="flex items-center justify-between border-t border-slate-800/80 pt-4 mt-2">
         <div>
           <span class="block text-[10px] uppercase text-slate-500 tracking-wider">Leading Ceiling Target</span>
-          <span class="text-sm font-mono font-bold text-emerald-400">{{ job.currentCeiling | currency:'USD' }}</span>
+          <span class="text-sm font-mono font-bold text-emerald-400">{{ job.currentCeiling | currency:'INR':'symbol':'1.2-2' }}</span>
         </div>
         <button (click)="submitUnderbid(job)" class="bg-slate-950 border border-slate-700 hover:bg-cyan-500 hover:text-slate-950 hover:border-cyan-500 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-lg transition-all uppercase tracking-wider shadow-md">
           Submit Underbid

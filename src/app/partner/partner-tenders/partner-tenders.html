@@ -61,14 +61,14 @@
           </div>
           <div class="text-left lg:text-right">
             <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Budget</p>
-            <p class="mt-1 text-xl font-semibold text-slate-100">${{ t.budget }}</p>
+            <p class="mt-1 text-xl font-semibold text-slate-100">{{ t.budget | currency:'INR':'symbol':'1.2-2' }}</p>
           </div>
         </div>
 
         <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-400">
           <span class="fleet-pill subtle-cyan rounded-full px-3 py-1">{{ (t.bids || []).length }} partner bids</span>
-          <span *ngIf="lowestBid(t) !== null" class="fleet-pill subtle-emerald rounded-full px-3 py-1">Lowest: ${{ lowestBid(t) }}</span>
-          <span *ngIf="recommendedBidAmount(t) !== null" class="fleet-pill subtle-amber rounded-full px-3 py-1">Suggested: ${{ recommendedBidAmount(t) }}</span>
+          <span *ngIf="lowestBid(t) !== null" class="fleet-pill subtle-emerald rounded-full px-3 py-1">Lowest: {{ lowestBid(t) | currency:'INR':'symbol':'1.2-2' }}</span>
+          <span *ngIf="recommendedBidAmount(t) !== null" class="fleet-pill subtle-amber rounded-full px-3 py-1">Suggested: {{ recommendedBidAmount(t) | currency:'INR':'symbol':'1.2-2' }}</span>
         </div>
 
         <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -91,11 +91,11 @@
       <div class="grid gap-3 sm:grid-cols-2">
         <div class="fleet-hub-stat rounded-2xl border border-white/10 bg-slate-900/70 p-4">
           <p class="text-sm text-slate-400">Current budget</p>
-          <p class="mt-2 text-xl font-semibold text-slate-100">${{ selectedTender.budget }}</p>
+          <p class="mt-2 text-xl font-semibold text-slate-100">{{ selectedTender.budget | currency:'INR':'symbol':'1.2-2' }}</p>
         </div>
         <div class="fleet-hub-stat rounded-2xl border border-white/10 bg-slate-900/70 p-4">
           <p class="text-sm text-slate-400">Lowest bid</p>
-          <p class="mt-2 text-xl font-semibold text-slate-100">${{ lowestBid(selectedTender) || 'N/A' }}</p>
+          <p class="mt-2 text-xl font-semibold text-slate-100">{{ lowestBid(selectedTender) !== null ? (lowestBid(selectedTender) | currency:'INR':'symbol':'1.2-2') : 'N/A' }}</p>
         </div>
       </div>
 
@@ -108,7 +108,7 @@
           <input class="fleet-input w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 shadow-sm placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none" placeholder="Enter your bid amount" [(ngModel)]="bidAmount" />
           <button class="fleet-btn-primary rounded-2xl px-6 py-3 text-sm font-semibold" (click)="placeBid()" [disabled]="loading">{{ loading ? 'Placing...' : 'Place Bid' }}</button>
         </div>
-        <p class="mt-3 text-sm text-slate-400">Suggested opening bid: ${{ recommendedBidAmount(selectedTender) ?? 'N/A' }}</p>
+        <p class="mt-3 text-sm text-slate-400">Suggested opening bid: {{ recommendedBidAmount(selectedTender) !== null ? (recommendedBidAmount(selectedTender) | currency:'INR':'symbol':'1.2-2') : 'N/A' }}</p>
       </div>
 
       <div class="fleet-hub-stat rounded-3xl border border-white/10 bg-slate-900/70 p-4">
@@ -120,7 +120,7 @@
           <div *ngFor="let b of selectedTender.bids" class="fleet-list-item flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-950/60 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div class="font-medium text-slate-100">{{ b.partnerName }}</div>
-              <div class="text-slate-400">${{ b.bidAmount }} • {{ b.createdAt | date:'short' }}</div>
+              <div class="text-slate-400">{{ b.bidAmount | currency:'INR':'symbol':'1.2-2' }} • {{ b.createdAt | date:'short' }}</div>
             </div>
             <button *ngIf="b.partnerId !== partnerId" class="fleet-btn-secondary rounded-full border px-3 py-1 text-xs" (click)="placeCounterBid(b)">Counter</button>
           </div>
@@ -138,7 +138,7 @@
             <div class="flex items-center justify-between gap-3">
               <div>
                 <div class="font-medium text-slate-100">Tender: {{ mb.tenderId }}</div>
-                <div class="text-slate-400">${{ mb.bidAmount }} • {{ mb.createdAt | date:'short' }}</div>
+                <div class="text-slate-400">{{ mb.bidAmount | currency:'INR':'symbol':'1.2-2' }} • {{ mb.createdAt | date:'short' }}</div>
               </div>
             </div>
           </li>

@@ -3,31 +3,44 @@
   
   <div>
     <div class="p-4 flex items-center justify-between border-b border-slate-800 h-16">
-      <span *ngIf="!(isSidebarCollapsed$ | async)" class="text-xl font-bold tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent whitespace-nowrap">
-        LOGI-CORE
-      </span>
-      <button (click)="toggleSidebar()" class="p-2 rounded-lg hover:bg-slate-800 transition-colors mx-auto text-cyan-400" title="Toggle sidebar" aria-label="Toggle sidebar">
+      <div class="flex items-center">
+        <div *ngIf="!(isSidebarCollapsed$ | async)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="h-8 w-8 mr-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.35)]" aria-hidden="true">
+            <defs>
+              <linearGradient id="renta-fast" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#22d3ee" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+            </defs>
+            <path d="M22 52 L30 16" stroke="url(#renta-fast)" stroke-width="6" stroke-linecap="round" />
+            <path d="M30 16 H44 C50.6 16 52 23 48 30 C44 37 38 36 34 36" stroke="url(#renta-fast)" stroke-width="6" stroke-linecap="round" />
+            <path d="M36 36 L50 52" stroke="#22d3ee" stroke-width="6" stroke-linecap="round" />
+            <path d="M40 52 H50 V42" stroke="#22d3ee" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+      <button (click)="toggleSidebar()" class="p-2 rounded-lg hover:bg-slate-800 transition-colors text-cyan-400" title="Toggle sidebar" aria-label="Toggle sidebar">
         <svg lucideMenu class="h-6 w-6"></svg>
       </button>
     </div>
 
     <nav class="p-4 space-y-2 mt-2">
-      <a routerLink="/login" routerLinkActive="bg-slate-800 text-cyan-400" class="flex items-center space-x-4 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer">
+      <a routerLink="/login" routerLinkActive="bg-slate-800 text-cyan-400" class="flex p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer" [ngClass]="(isSidebarCollapsed$ | async) ? 'justify-center space-x-0' : 'items-center space-x-4'">
         <svg lucideLogOut class="h-6 w-6 shrink-0"></svg>
         <span *ngIf="!(isSidebarCollapsed$ | async)" class="font-medium whitespace-nowrap">Access Terminal</span>
       </a>
       
-      <a routerLink="/customer" routerLinkActive="bg-slate-800 text-cyan-400" class="flex items-center space-x-4 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer">
+      <a routerLink="/customer" routerLinkActive="bg-slate-800 text-cyan-400" class="flex p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer" [ngClass]="(isSidebarCollapsed$ | async) ? 'justify-center space-x-0' : 'items-center space-x-4'">
         <svg lucideUsers class="h-6 w-6 shrink-0"></svg>
         <span *ngIf="!(isSidebarCollapsed$ | async)" class="font-medium whitespace-nowrap">Client Dashboard</span>
       </a>
       
-      <a routerLink="/partner" routerLinkActive="bg-slate-800 text-cyan-400" class="flex items-center space-x-4 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer">
+      <a routerLink="/partner" routerLinkActive="bg-slate-800 text-cyan-400" class="flex p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer" [ngClass]="(isSidebarCollapsed$ | async) ? 'justify-center space-x-0' : 'items-center space-x-4'">
         <svg lucideTruck class="h-6 w-6 shrink-0"></svg>
         <span *ngIf="!(isSidebarCollapsed$ | async)" class="font-medium whitespace-nowrap">Fleet Hub</span>
       </a>
       
-      <a routerLink="/billing" routerLinkActive="bg-slate-800 text-cyan-400" class="flex items-center space-x-4 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer">
+      <a routerLink="/billing" routerLinkActive="bg-slate-800 text-cyan-400" class="flex p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-cyan-400 group cursor-pointer" [ngClass]="(isSidebarCollapsed$ | async) ? 'justify-center space-x-0' : 'items-center space-x-4'">
         <svg lucideReceiptText class="h-6 w-6 shrink-0"></svg>
         <span *ngIf="!(isSidebarCollapsed$ | async)" class="font-medium whitespace-nowrap">Billing & Escrow</span>
       </a>

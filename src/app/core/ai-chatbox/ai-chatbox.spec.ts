@@ -19,4 +19,16 @@ describe('AiChatbox', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should stay inactive until a tender is assigned and payment is approved', () => {
+    component.updateChatAvailability([], null);
+    expect(component.isChatEnabled).toBeFalsy();
+
+    component.updateChatAvailability([
+      { id: 't1', status: 'assigned', paymentApproved: true, assignedPartnerId: 'partner_1' }
+    ] as any, { id: 'partner_1', role: 'partner' } as any);
+
+    expect(component.isChatEnabled).toBeTruthy();
+    expect(component.activeTenderId).toBe('t1');
+  });
 });

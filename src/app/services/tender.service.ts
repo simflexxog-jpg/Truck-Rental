@@ -24,6 +24,7 @@ export interface Tender {
   assignedBidId?: string;
   assignedPartnerId?: string;
   assignedPartnerName?: string;
+  paymentApproved?: boolean;
 }
 
 export interface Bid {
@@ -56,12 +57,42 @@ export class TenderService {
   ]);
   public activeTenders$ = this.activeTenders.asObservable();
 
+  private refreshTimer?: number;
+  private readonly refreshIntervalMs = 5000;
+
   constructor(private billingService: BillingService, private http: HttpClient, private webSocketService: WebSocketService) {
     this.webSocketService.onMessage('tender_created').subscribe(message => {
       const tender = message.payload as Tender;
       if (tender && tender.id && !this.getTenderById(tender.id)) {
         const allTenders = [...this.tenders.value, tender];
         this.tenders.next(allTenders);
+        this.syncCache();
+      }
+    });
+    this.startAutoRefresh();
+  }
+
+  private startAutoRefresh(): void {
+    if (typeof window === 'undefined' || this.refreshTimer) {
+      return;
+    }
+
+    this.refreshTenders();
+    this.refreshTimer = window.setInterval(() => {
+      this.refreshTenders();
+    }, this.refreshIntervalMs);
+  }
+
+  private refreshTenders(): void {
+    this.http.get<Tender[]>(`${API_BASE}/tenders`).pipe(
+      catchError(() => of(null as Tender[] | null))
+    ).subscribe(list => {
+      if (Array.isArray(list)) {
+        const normalized = list.map(tender => ({
+          ...tender,
+          createdAt: tender.createdAt ? new Date(tender.createdAt) : new Date()
+        }));
+        this.tenders.next(normalized);
         this.syncCache();
       }
     });
@@ -86,6 +117,7 @@ export class TenderService {
         const tender = this.getTenderById(tenderId);
         if (tender) {
           tender.status = 'assigned';
+          tender.paymentApproved = false;
           (tender as any).assignedBidId = res.acceptedBid?.id || bidId;
           (tender as any).assignedPartnerId = res.acceptedBid?.partnerId || (tender as any).assignedPartnerId;
           (tender as any).assignedPartnerName = res.acceptedBid?.partnerName || (tender as any).assignedPartnerName;
@@ -103,6 +135,7 @@ export class TenderService {
         const bid = tender?.bids.find(b => b.id === bidId);
         if (tender && bid) {
           tender.status = 'assigned';
+          tender.paymentApproved = false;
           (tender as any).assignedBidId = bid.id;
           (tender as any).assignedPartnerId = bid.partnerId;
           (tender as any).assignedPartnerName = bid.partnerName;
@@ -172,7 +205,8 @@ export class TenderService {
           auctionEnd,
           createdAt,
           status: 'open',
-          bids: []
+          bids: [],
+          paymentApproved: false
         };
         const allTenders = [...this.tenders.value, tender];
         this.tenders.next(allTenders);
@@ -184,15 +218,27 @@ export class TenderService {
   }
 
   getTenders(): Tender[] {
-    // try to fetch from backend, otherwise return cached
-    this.http.get<Tender[]>(`${API_BASE}/tenders`).pipe(
-      catchError(() => of(null))
-    ).subscribe(list => { if (list && list.length) { this.tenders.next(list); this.syncCache(); } });
+    this.refreshTenders();
     return this.tenders.value;
   }
 
   getTenderById(id: string): Tender | undefined {
     return this.tenders.value.find(t => t.id === id);
+  }
+
+  delistTender(tenderId: string): void {
+    const remainingTenders = this.tenders.value.filter(tender => tender.id !== tenderId);
+    this.tenders.next(remainingTenders);
+    this.syncCache();
+  }
+
+  markPaymentApproved(tenderId: string): void {
+    const tender = this.getTenderById(tenderId);
+    if (tender) {
+      tender.paymentApproved = true;
+      this.tenders.next([...this.tenders.value]);
+      this.syncCache();
+    }
   }
 
   private getLowestBid(tender: Tender): number | null {
@@ -206,12 +252,12 @@ export class TenderService {
     }
 
     if (bidAmount >= tender.budget) {
-      return `Bid must be less than the budget ($${tender.budget}).`;
+      return `Bid must be less than the budget (₹${tender.budget}).`;
     }
 
     const lowestBid = this.getLowestBid(tender);
     if (lowestBid !== null && bidAmount >= lowestBid) {
-      return `Bid must be lower than the current lowest bid ($${lowestBid}).`;
+      return `Bid must be lower than the current lowest bid (₹${lowestBid}).`;
     }
 
     return null;
