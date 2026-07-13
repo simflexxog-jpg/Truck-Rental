@@ -19,6 +19,9 @@ router.post('/', async (req, res) => {
       auctionEndsAt: new Date(Date.now() + (durationMinutes || 60) * 60000)
     });
     await auction.save();
+    if (req.app.get('io')) {
+      req.app.get('io').to('partner').emit('new-booking', auction);
+    }
     res.json(auction);
   } catch (err) {
     console.error(err);
@@ -98,6 +101,8 @@ router.post('/:id/accept', async (req, res) => {
 
     // Notify via socket
     if (req.app.get('io')) {
+      req.app.get('io').to('partner').emit('booking-updated', order);
+      req.app.get('io').to('customer').emit('booking-updated', order);
       req.app.get('io').emit('auction:assigned', { auctionId: id, order });
     }
 

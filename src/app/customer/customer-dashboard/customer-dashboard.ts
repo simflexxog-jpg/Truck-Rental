@@ -6,6 +6,7 @@ import { LiveMapMonitorComponent } from '../live-map-monitor/live-map-monitor';
 import { TenderDetailComponent } from '../tender-detail/tender-detail';
 import { TimerComponent } from '../../shared/timer/timer';
 import { TenderService, Tender } from '../../services/tender.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-customer-dashboard',
@@ -19,9 +20,20 @@ export class CustomerDashboardComponent implements OnInit {
   originNode = 'Barasat Terminal Vector';
   destinationNode = 'Salt Lake Sector V Hub';
 
-  constructor(private tenderService: TenderService, private router: Router) {}
+  constructor(private tenderService: TenderService, private router: Router, private socketService: SocketService) {}
 
   ngOnInit() {
+    this.socketService.joinRoom('customer');
+    this.socketService.listen<any>('booking-updated').subscribe(updated => {
+      this.tenders = this.tenders.map(t => t.id === updated._id ? { ...t, ...updated } : t);
+      if (this.selectedTenderId && !this.tenders.some(t => t.id === this.selectedTenderId)) {
+        this.selectedTenderId = null;
+        return;
+      }
+      if (!this.selectedTenderId && this.tenders.length) {
+        this.selectTender(this.tenders[0].id);
+      }
+    });
     this.tenderService.tenders$.subscribe(list => {
       this.tenders = list || [];
       if (this.selectedTenderId && !this.tenders.some(t => t.id === this.selectedTenderId)) {

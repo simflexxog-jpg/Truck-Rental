@@ -10,7 +10,8 @@ const mongoose = require('mongoose');
 const { Server } = require('socket.io');
 
 const app = express();
-app.use(cors());
+const httpServer = http.createServer(app);
+app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 app.use(bodyParser.json());
 
 // Preserve the lightweight file-based routes for compatibility
@@ -26,13 +27,25 @@ app.use('/api/orders', require('./routes/orders'));
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 3000;
-const server = http.createServer(app);
 
 // Socket.io setup for real-time events (bids, chat, driver location)
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || '*',
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
+});
 app.set('io', io);
 
 io.on('connection', (socket) => {
+  socket.on('join-room', (room) => {
+    if (room === 'customer' || room === 'partner') {
+      socket.join(room);
+    }
+  });
+
   // allow clients to join auction rooms
   socket.on('join:auction', (auctionId) => {
     socket.join(`auction_${auctionId}`);
@@ -60,4 +73,4 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   console.log('Connected to MongoDB');
 }).catch(err => console.warn('MongoDB not available, running in file-mode', err.message));
 
-server.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
+httpServer.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));

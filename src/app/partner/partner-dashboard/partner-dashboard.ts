@@ -7,6 +7,7 @@ import { AddOnJobBoardComponent } from '../add-on-job-board/add-on-job-board';
 import { LiveChatComponent } from '../live-chat/live-chat';
 import { PartnerTendersComponent } from '../partner-tenders/partner-tenders';
 import { TimerComponent } from '../../shared/timer/timer';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-partner-dashboard',
@@ -21,7 +22,7 @@ export class PartnerDashboardComponent implements OnInit {
   chatTenderId?: string;
   currentUser: User | null = null;
 
-  constructor(private tenderService: TenderService, public auth: AuthService) {
+  constructor(private tenderService: TenderService, public auth: AuthService, private socketService: SocketService) {
     const user = this.auth.getCurrentUser();
     if (user) this.partnerId = user.id || this.partnerId;
     this.auth.currentUser$.subscribe(u => { this.currentUser = u; if (u) { this.partnerId = u.id; this.recomputePending(); } });
@@ -38,6 +39,15 @@ export class PartnerDashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.socketService.joinRoom('partner');
+    this.socketService.listen<any>('new-booking').subscribe(booking => {
+      this.tenders = [booking, ...this.tenders];
+      this.recomputePending();
+    });
+    this.socketService.listen<any>('booking-updated').subscribe(updated => {
+      this.tenders = this.tenders.map(b => b.id === updated._id ? { ...b, ...updated } : b);
+      this.recomputePending();
+    });
     this.tenderService.tenders$.subscribe(list => {
       this.tenders = list || [];
       this.recomputePending();
