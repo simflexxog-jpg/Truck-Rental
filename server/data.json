@@ -12,7 +12,43 @@
       "budget": 6150,
       "createdAt": "2026-07-13T04:50:14.520Z",
       "status": "open",
-      "bids": []
+      "bids": [
+        {
+          "id": "bid_1783957069510",
+          "tenderId": "tender_1783918214520",
+          "partnerId": "user_1783913816941",
+          "partnerName": "Agnib",
+          "bidAmount": 2000,
+          "createdAt": "2026-07-13T15:37:49.510Z"
+        }
+      ],
+      "lowestBid": 2000,
+      "leadingPartner": "Agnib"
+    },
+    {
+      "id": "tender_1783957026105",
+      "title": "g",
+      "customerId": "customer_1783957026105",
+      "weight": 44,
+      "duration": 2,
+      "origin": "dhaka",
+      "destination": "dehli",
+      "auctionEnd": "2026-07-13T15:39:06.105Z",
+      "budget": 2200,
+      "createdAt": "2026-07-13T15:37:06.105Z",
+      "status": "open",
+      "bids": [
+        {
+          "id": "bid_1783957084982",
+          "tenderId": "tender_1783957026105",
+          "partnerId": "user_1783913816941",
+          "partnerName": "Agnib",
+          "bidAmount": 2000,
+          "createdAt": "2026-07-13T15:38:04.982Z"
+        }
+      ],
+      "lowestBid": 2000,
+      "leadingPartner": "Agnib"
     }
   ],
   "transactions": [],

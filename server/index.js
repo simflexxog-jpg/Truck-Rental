@@ -4,17 +4,27 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
 const http = require('http');
 const mongoose = require('mongoose');
 const { Server } = require('socket.io');
+const { logger } = require('./logger');
+const { authMiddleware } = require('./middleware/auth');
+const { applySecurityMiddleware } = require('./middleware/security');
+const { initializeSentry } = require('./sentry');
+const { attachSocketAdapter } = require('./socket/adapter');
+
+initializeSentry();
 
 const app = express();
 const httpServer = http.createServer(app);
+
+applySecurityMiddleware(app);
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 app.use(bodyParser.json());
+app.use(authMiddleware);
 
 // Preserve the lightweight file-based routes for compatibility
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tenders', require('./routes/tenders'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/billing', require('./routes/billing'));
@@ -22,9 +32,7 @@ app.use('/api/billing', require('./routes/billing'));
 // New Mongo-backed routes
 app.use('/api/auctions', require('./routes/auctions'));
 app.use('/api/orders', require('./routes/orders'));
-
-// Optional: simple health-check
-app.get('/health', (req, res) => res.json({ ok: true }));
+app.use('/health', require('./routes/health'));
 
 const PORT = process.env.PORT || 3000;
 
@@ -38,6 +46,7 @@ const io = new Server(httpServer, {
   transports: ['websocket', 'polling']
 });
 app.set('io', io);
+attachSocketAdapter(io);
 
 io.on('connection', (socket) => {
   socket.on('join-room', (room) => {
@@ -70,7 +79,7 @@ io.on('connection', (socket) => {
 // Connect to MongoDB (if MONGO_URI provided)
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/truck_rental';
 mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => console.warn('MongoDB not available, running in file-mode', err.message));
+  logger.info('Connected to MongoDB');
+}).catch(err => logger.warn('MongoDB not available, running in file-mode', { error: err.message }));
 
-httpServer.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
+httpServer.listen(PORT, () => logger.info(`Backend running on http://localhost:${PORT}`));

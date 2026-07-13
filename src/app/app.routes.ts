@@ -7,6 +7,7 @@ import { BillingDashboardComponent } from './billing/billing-dashboard/billing-d
 import { PaymentPageComponent } from './billing/payment-page/payment-page';
 import { CustomerGuard } from './guards/customer.guard';
 import { PartnerGuard } from './guards/partner.guard';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   // Default redirect to login
@@ -19,8 +20,8 @@ export const routes: Routes = [
   // Core Operational Dashboards
   { path: 'customer', component: CustomerDashboardComponent, canActivate: [CustomerGuard] },
   { path: 'partner', component: PartnerDashboardComponent, canActivate: [PartnerGuard] },
-  { path: 'billing', component: BillingDashboardComponent },
-  { path: 'billing/pay/:tenderId', component: PaymentPageComponent },
+  { path: 'billing', component: BillingDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'billing/pay/:tenderId', component: PaymentPageComponent, canActivate: [AuthGuard] },
   
   // Catch-all for unknown routes (404 fallback)
   { path: '**', redirectTo: 'login' }
