@@ -6,13 +6,30 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { createServer } from 'node:http';
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { join, resolve } from 'node:path';
 import { WebSocketServer } from 'ws';
+
+const require = createRequire(import.meta.url);
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+app.use(express.json());
+
+try {
+  const tendersRouter = require(resolve(process.cwd(), 'server', 'routes', 'tenders'));
+  const chatRouter = require(resolve(process.cwd(), 'server', 'routes', 'chat'));
+  const billingRouter = require(resolve(process.cwd(), 'server', 'routes', 'billing'));
+
+  app.use('/api/tenders', tendersRouter);
+  app.use('/api/chat', chatRouter);
+  app.use('/api/billing', billingRouter);
+} catch (error) {
+  console.warn('[API] Could not mount backend routes:', error);
+}
 
 /**
  * Example Express Rest API endpoints can be defined here.

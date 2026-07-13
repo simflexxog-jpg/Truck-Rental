@@ -13,7 +13,7 @@ export interface AiMessage {
   providedIn: 'root'
 })
 export class AiChatService {
-  private readonly apiBase = 'http://localhost:3000/api';
+  private readonly apiBase = (typeof window !== 'undefined' && window.location?.origin ? `${window.location.origin}/api` : '/api');
 
   private conversationHistory = new BehaviorSubject<AiMessage[]>([
     {

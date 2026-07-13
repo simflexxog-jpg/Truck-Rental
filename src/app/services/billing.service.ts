@@ -39,7 +39,7 @@ export class BillingService {
   });
   public metrics$ = this.metrics.asObservable();
 
-  private API_BASE = 'http://localhost:3000/api';
+  private API_BASE = (typeof window !== 'undefined' && window.location?.origin ? `${window.location.origin}/api` : '/api');
   private refreshTimer?: number;
   private readonly refreshIntervalMs = 5000;
 

@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { BillingService } from './billing.service';
 import { WebSocketService } from './web-socket.service';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = (typeof window !== 'undefined' && window.location?.origin ? `${window.location.origin}/api` : '/api');
 const DEMO_CUSTOMER_ID = 'customer_demo_001';
 
 export interface Tender {
@@ -59,6 +59,7 @@ export class TenderService {
 
   private refreshTimer?: number;
   private readonly refreshIntervalMs = 5000;
+  private readonly syncStorageKey = 'truck-rental-sync';
 
   constructor(private billingService: BillingService, private http: HttpClient, private webSocketService: WebSocketService) {
     this.webSocketService.onMessage('tender_created').subscribe(message => {
@@ -69,7 +70,22 @@ export class TenderService {
         this.syncCache();
       }
     });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', this.handleStorageSync);
+    }
     this.startAutoRefresh();
+  }
+
+  private handleStorageSync = (event: StorageEvent) => {
+    if (event.key === this.syncStorageKey) {
+      this.refreshTenders();
+    }
+  };
+
+  private notifyTabs(): void {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.syncStorageKey, JSON.stringify({ type: 'tenders', ts: Date.now() }));
+    }
   }
 
   private startAutoRefresh(): void {
@@ -143,6 +159,7 @@ export class TenderService {
           const allTenders = this.tenders.value;
           this.tenders.next([...allTenders]);
           this.syncCache();
+          this.notifyTabs();
           // create local transaction
           return this.billingService.createTransaction(tenderId, bid.partnerName, bid.bidAmount, 'escrow').pipe(
             map(txn => ({ tender, transactionId: txn.id }))
@@ -175,6 +192,7 @@ export class TenderService {
         const allTenders = this.tenders.value;
         this.tenders.next([...allTenders]);
         this.syncCache();
+        this.notifyTabs();
         return of(tender);
       })
     );
@@ -211,6 +229,7 @@ export class TenderService {
         const allTenders = [...this.tenders.value, tender];
         this.tenders.next(allTenders);
         this.syncCache();
+        this.notifyTabs();
         this.webSocketService.send({ type: 'tender_created', payload: tender });
         return of(tender);
       })
@@ -238,6 +257,7 @@ export class TenderService {
       tender.paymentApproved = true;
       this.tenders.next([...this.tenders.value]);
       this.syncCache();
+      this.notifyTabs();
     }
   }
 
@@ -301,6 +321,7 @@ export class TenderService {
         const allTenders = this.tenders.value;
         this.tenders.next([...allTenders]);
         this.syncCache();
+        this.notifyTabs();
         return of(bid);
       })
     );

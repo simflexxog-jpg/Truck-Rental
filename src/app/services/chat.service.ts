@@ -13,7 +13,7 @@ export interface ChatMessage {
   tenderId?: string;
 }
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = (typeof window !== 'undefined' && window.location?.origin ? `${window.location.origin}/api` : '/api');
 
 @Injectable({
   providedIn: 'root'

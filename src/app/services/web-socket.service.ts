@@ -2,11 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-// Use dynamic require to avoid build-time import errors if `socket.io-client` is not installed.
-declare const require: any;
-let io: any = undefined;
-type Socket = any;
-
 export interface WebSocketMessage {
   type: string;
   payload?: any;
@@ -14,7 +9,7 @@ export interface WebSocketMessage {
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
-  private socket?: Socket;
+  private socket?: WebSocket;
   private connectionState = new BehaviorSubject<boolean>(false);
   public connected$ = this.connectionState.asObservable();
   private incomingMessages = new Subject<WebSocketMessage>();
@@ -26,49 +21,58 @@ export class WebSocketService {
   }
 
   private get socketUrl() {
-    const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = window.location.hostname || 'localhost';
-    const port = window.location.port || '3000';
-    return `${protocol}://${host}:${port}`;
+    const port = window.location.port;
+    const base = port ? `${host}:${port}` : host;
+    return `${protocol}://${base}/ws`;
   }
 
   connect() {
-    if (this.socket) return;
+    if (typeof window === 'undefined' || this.socket || !window.WebSocket) {
+      return;
+    }
+
     try {
-      if (!io) {
-        // try to pick up a global `io` (e.g., loaded on the page) or require the package
-        io = (typeof window !== 'undefined' && (window as any).io) ? (window as any).io : require('socket.io-client');
-      }
-      if (!io) {
-        console.warn('socket.io-client not available; real-time disabled');
-        return;
-      }
-      this.socket = io(this.socketUrl, { transports: ['websocket', 'polling'] });
-      this.socket.on('connect', () => { this.connectionState.next(true); });
-      this.socket.on('disconnect', () => { this.connectionState.next(false); });
-      this.socket.onAny((evt: string, payload: any) => {
-        this.incomingMessages.next({ type: evt, payload });
-      });
+      this.socket = new WebSocket(this.socketUrl);
+      this.socket.onopen = () => {
+        this.connectionState.next(true);
+      };
+      this.socket.onclose = () => {
+        this.connectionState.next(false);
+        this.socket = undefined;
+      };
+      this.socket.onerror = () => {
+        this.connectionState.next(false);
+      };
+      this.socket.onmessage = (event: MessageEvent) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message && message.type) {
+            this.incomingMessages.next({ type: message.type, payload: message.payload });
+          }
+        } catch (e) {
+          console.warn('WebSocket message parse failed', e);
+        }
+      };
     } catch (e) {
-      console.warn('Socket.io connect failed', e);
+      console.warn('WebSocket connect failed', e);
     }
   }
 
   disconnect() {
-    this.socket?.disconnect();
+    this.socket?.close();
     this.socket = undefined;
     this.connectionState.next(false);
   }
 
   // Support both `send(type, payload)` and legacy `send({ type, payload })` calls
   send(messageOrType: string | WebSocketMessage, payload?: any) {
-    if (!this.socket) return;
-    if (typeof messageOrType === 'string') {
-      this.socket.emit(messageOrType, payload);
-    } else {
-      // emit the event name as the message type and the payload as data
-      this.socket.emit(messageOrType.type, messageOrType.payload);
-    }
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
+    const envelope = typeof messageOrType === 'string'
+      ? { type: messageOrType, payload }
+      : { type: messageOrType.type, payload: messageOrType.payload };
+    this.socket.send(JSON.stringify(envelope));
   }
 
   onMessage(type?: string): Observable<WebSocketMessage> {
