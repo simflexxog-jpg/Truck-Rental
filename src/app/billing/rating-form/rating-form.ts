@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideStar } from '@lucide/angular';
 import { BillingService } from '../../services/billing.service';
 
 @Component({
   selector: 'app-rating-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideStar],
   templateUrl: './rating-form.html'
 })
 export class RatingFormComponent {

@@ -18,13 +18,15 @@
         <button *ngFor="let star of stars" 
                 type="button" 
                 (click)="setRating(star)"
+                [attr.title]="'Rate ' + star + ' star'"
+                [attr.aria-label]="'Rate ' + star + ' star'"
+                title="Rate star"
+                aria-label="Rate star"
                 (mouseenter)="setHover(star)"
                 (mouseleave)="clearHover()"
                 [ngClass]="(hoveredRating || currentRating) >= star ? 'text-amber-400 scale-110' : 'text-slate-700'"
                 class="transition-all duration-200 transform hover:scale-125 focus:outline-none">
-          <svg class="w-8 h-8 fill-current drop-shadow-md" viewBox="0 0 20 20">
-            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-          </svg>
+          <svg lucideStar class="w-8 h-8 drop-shadow-md"></svg>
         </button>
         
         <span *ngIf="currentRating > 0" class="text-xs font-mono font-bold text-amber-400 bg-amber-950/40 border border-amber-800/50 px-2.5 py-1 rounded-md ml-4 animate-fade-in">

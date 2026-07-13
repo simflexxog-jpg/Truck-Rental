@@ -9,7 +9,8 @@ import { TimerComponent } from '../../shared/timer/timer';
   selector: 'app-partner-tenders',
   standalone: true,
   imports: [CommonModule, FormsModule, TimerComponent],
-  templateUrl: './partner-tenders.html'
+  templateUrl: './partner-tenders.html',
+  styleUrls: ['./partner-tenders.css']
 })
 export class PartnerTendersComponent implements OnInit {
   partnerId = 'partner_demo_001';
@@ -19,6 +20,7 @@ export class PartnerTendersComponent implements OnInit {
   bidAmount = '';
   loading = false;
   filterOpen = true;
+  feedback: { type: 'success' | 'error' | 'info' | null; message: string } = { type: null, message: '' };
 
   constructor(private tenderService: TenderService, private auth: AuthService) {
     const user = this.auth.getCurrentUser();
@@ -27,14 +29,20 @@ export class PartnerTendersComponent implements OnInit {
       this.partnerName = user.entityName || this.partnerName;
     }
     this.auth.currentUser$.subscribe(u => {
-      if (u) { this.partnerId = u.id; this.partnerName = u.entityName; }
+      if (u) {
+        this.partnerId = u.id;
+        this.partnerName = u.entityName;
+      }
     });
   }
 
   ngOnInit() {
-    // subscribe to tender updates
-    this.tenderService.tenders$.subscribe(list => this.tenders = list || []);
-    // trigger initial fetch
+    this.tenderService.tenders$.subscribe(list => {
+      this.tenders = list || [];
+      if (!this.selectedTender || !this.tenders.some(t => t.id === this.selectedTender?.id)) {
+        this.selectedTender = this.displayedTenders[0];
+      }
+    });
     this.tenderService.getTenders();
   }
 
@@ -42,9 +50,34 @@ export class PartnerTendersComponent implements OnInit {
     return this.filterOpen ? this.tenders.filter(t => t.status === 'open') : this.tenders;
   }
 
+  get openTenderCount(): number {
+    return this.displayedTenders.length;
+  }
+
+  get activePartnerCount(): number {
+    const partners = new Set<string>();
+    this.tenders.forEach(tender => {
+      (tender.bids || []).forEach(bid => partners.add(bid.partnerId));
+    });
+    return partners.size;
+  }
+
+  get myBidCount(): number {
+    return this.myBids().length;
+  }
+
   selectTender(t: Tender) {
     this.selectedTender = t;
     this.bidAmount = '';
+    this.setFeedback('info', `You are reviewing ${t.title}.`);
+  }
+
+  clearFeedback() {
+    this.feedback = { type: null, message: '' };
+  }
+
+  setFeedback(type: 'success' | 'error' | 'info' | null, message: string) {
+    this.feedback = { type, message };
   }
 
   timeRemaining(t: Tender) {
@@ -60,6 +93,21 @@ export class PartnerTendersComponent implements OnInit {
     if (!t.auctionEnd) return 0;
     const remaining = Math.ceil((new Date(t.auctionEnd).getTime() - Date.now()) / 1000);
     return remaining > 0 ? remaining : 0;
+  }
+
+  bidStatusLabel(tender: Tender): string {
+    const bids = tender.bids?.length || 0;
+    if (!bids) return 'Fresh opportunity';
+    if (this.remainingSeconds(tender) < 300) return 'Closing soon';
+    return 'Competitive';
+  }
+
+  recommendedBidAmount(tender: Tender): number | null {
+    const lowest = this.lowestBid(tender);
+    if (lowest === null) {
+      return Math.max(100, Math.round(tender.budget * 0.9));
+    }
+    return Math.max(1, Math.round(lowest - Math.max(25, lowest * 0.05)));
   }
 
   private getBidValidationError(tender: Tender, bidAmount: number): string | null {
@@ -80,21 +128,29 @@ export class PartnerTendersComponent implements OnInit {
   }
 
   placeBid() {
-    if (!this.selectedTender) return alert('Select a tender first');
+    if (!this.selectedTender) {
+      this.setFeedback('error', 'Select a tender first.');
+      return;
+    }
+
     const amount = parseFloat(this.bidAmount as any);
     const validationError = this.getBidValidationError(this.selectedTender, amount);
-    if (validationError) return alert(validationError);
+    if (validationError) {
+      this.setFeedback('error', validationError);
+      return;
+    }
 
     this.loading = true;
     this.tenderService.placeBid(this.selectedTender.id, this.partnerId, this.partnerName, amount).subscribe({
       next: (bid: Bid) => {
         this.loading = false;
-        alert(`Bid ${bid.id} placed at $${bid.bidAmount}`);
+        this.setFeedback('success', `Bid ${bid.id} placed at $${bid.bidAmount}.`);
         this.bidAmount = '';
+        this.tenderService.getTenders();
       },
       error: (err) => {
         this.loading = false;
-        alert(err?.error?.error || err?.message || 'Failed to place bid');
+        this.setFeedback('error', err?.error?.error || err?.message || 'Failed to place bid');
       }
     });
   }
@@ -104,19 +160,40 @@ export class PartnerTendersComponent implements OnInit {
     if (!amountStr) return;
     const amount = parseFloat(amountStr);
     const validationError = this.getBidValidationError(t, amount);
-    if (validationError) return alert(validationError);
-    this.tenderService.placeBid(t.id, this.partnerId, this.partnerName, amount).subscribe({ next: (b) => alert(`Quick bid ${b.id} placed at $${b.bidAmount}`), error: (err) => alert(err?.error?.error || err?.message || 'Failed') });
+    if (validationError) {
+      this.setFeedback('error', validationError);
+      return;
+    }
+    this.tenderService.placeBid(t.id, this.partnerId, this.partnerName, amount).subscribe({
+      next: (b) => {
+        this.setFeedback('success', `Quick bid ${b.id} placed at $${b.bidAmount}.`);
+        this.tenderService.getTenders();
+      },
+      error: (err) => this.setFeedback('error', err?.error?.error || err?.message || 'Failed')
+    });
   }
 
   placeCounterBid(existing: Bid) {
     const tender = this.tenderService.getTenderById(existing.tenderId);
-    if (!tender) return alert('Tender not found for counter bid.');
+    if (!tender) {
+      this.setFeedback('error', 'Tender not found for counter bid.');
+      return;
+    }
     const amountStr = prompt(`Counter bid for ${existing.partnerName}'s $${existing.bidAmount}. Enter your amount:`);
     if (!amountStr) return;
     const amount = parseFloat(amountStr);
     const validationError = this.getBidValidationError(tender, amount);
-    if (validationError) return alert(validationError);
-    this.tenderService.placeBid(existing.tenderId, this.partnerId, this.partnerName, amount).subscribe({ next: (b) => alert(`Counter bid ${b.id} placed at $${b.bidAmount}`), error: (err) => alert(err?.error?.error || err?.message || 'Failed') });
+    if (validationError) {
+      this.setFeedback('error', validationError);
+      return;
+    }
+    this.tenderService.placeBid(existing.tenderId, this.partnerId, this.partnerName, amount).subscribe({
+      next: (b) => {
+        this.setFeedback('success', `Counter bid ${b.id} placed at $${b.bidAmount}.`);
+        this.tenderService.getTenders();
+      },
+      error: (err) => this.setFeedback('error', err?.error?.error || err?.message || 'Failed')
+    });
   }
 
   myBids(): Bid[] {

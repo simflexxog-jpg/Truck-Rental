@@ -2,12 +2,13 @@ import { Component, ElementRef, ViewChild, AfterViewChecked, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
+import { LucideChevronDown, LucideChevronUp, LucideSendHorizontal } from '@lucide/angular';
 import { AiChatService } from '../../services/ai-chat.service';
 
 @Component({
   selector: 'app-ai-chatbox',
   standalone: true,
-  imports: [CommonModule, DragDropModule, FormsModule],
+  imports: [CommonModule, DragDropModule, FormsModule, LucideChevronDown, LucideChevronUp, LucideSendHorizontal],
   templateUrl: './ai-chatbox.html'
 })
 export class AiChatboxComponent implements AfterViewChecked, OnInit {

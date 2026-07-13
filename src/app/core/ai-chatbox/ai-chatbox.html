@@ -8,8 +8,8 @@
     </div>
     
     <button type="button" (click)="toggleMinimize()" class="text-slate-400 hover:text-white transition-colors p-1" title="Minimize chat assistant" aria-label="Minimize chat assistant">
-      <svg *ngIf="!isMinimized" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      <svg *ngIf="isMinimized" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+      <svg lucideChevronDown *ngIf="!isMinimized" class="h-4 w-4"></svg>
+      <svg lucideChevronUp *ngIf="isMinimized" class="h-4 w-4"></svg>
     </button>
   </div>
 
@@ -35,7 +35,7 @@
            placeholder="Ask about tenders, bids, routes..." 
            class="w-full text-xs bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500 placeholder-slate-600 transition-colors">
     <button type="button" (click)="sendMessage()" [disabled]="isLoading" class="p-2 bg-cyan-900 hover:bg-cyan-800 disabled:opacity-60 text-cyan-400 rounded-lg transition-colors" title="Send message" aria-label="Send message">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
+      <svg lucideSendHorizontal class="h-4 w-4"></svg>
     </button>
   </div>
 </div>
