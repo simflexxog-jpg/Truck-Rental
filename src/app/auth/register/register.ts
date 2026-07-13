@@ -28,6 +28,13 @@ export class RegisterComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      const user = this.authService.getCurrentUser();
+      const route = user?.role === 'customer' ? '/customer' : '/partner';
+      this.router.navigate([route]);
+      return;
+    }
+
     const role = this.route.snapshot.queryParamMap.get('role');
     if (role === 'partner' || role === 'customer') {
       this.selectedRole = role as 'customer' | 'partner';
@@ -67,15 +74,14 @@ export class RegisterComponent implements OnInit {
       this.registerData.password,
       this.selectedRole
     ).subscribe({
-      next: (user) => {
-        this.successMessage = `Registration successful! You may now login.`;
-        // Redirect to login page for the same role so the user explicitly logs in
-        setTimeout(() => {
-          this.router.navigate(['/login'], { queryParams: { role: this.selectedRole } });
-        }, 1200);
+      next: () => {
+        this.successMessage = 'Account created successfully. Please sign in with your new account.';
         this.isLoading = false;
+        this.router.navigate(['/login'], {
+          queryParams: { role: this.selectedRole, registered: 'true' }
+        });
       },
-      error: (err) => {
+      error: () => {
         this.errorMessage = 'Registration failed. Please try again.';
         this.isLoading = false;
       }

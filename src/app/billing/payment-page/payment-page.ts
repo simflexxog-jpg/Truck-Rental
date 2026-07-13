@@ -37,7 +37,11 @@ export class PaymentPageComponent implements OnInit {
     if (this.tenderId) {
       this.tender = this.tenderService.getTenderById(this.tenderId);
       if (this.tender) {
-        this.paymentAmount = this.tender.budget;
+        const acceptedBid = this.tender.bids.find(b => b.id === this.tender?.assignedBidId);
+        const lowestBid = this.tender.bids.length
+          ? Math.min(...this.tender.bids.map(b => b.bidAmount))
+          : null;
+        this.paymentAmount = acceptedBid?.bidAmount ?? lowestBid ?? this.tender.budget;
       }
     }
   }

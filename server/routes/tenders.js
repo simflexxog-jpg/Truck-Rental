@@ -92,6 +92,7 @@ router.post('/:id/accept', (req, res) => {
   tender.assignedBidId = bid.id;
   tender.assignedPartnerId = bid.partnerId;
   tender.assignedPartnerName = bid.partnerName;
+  tender.winningBidAmount = bid.bidAmount;
 
   saveData(data);
   res.json({ tender, acceptedBid: bid });

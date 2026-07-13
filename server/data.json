@@ -1,5 +1,63 @@
 {
-  "tenders": [],
+  "tenders": [
+    {
+      "id": "tender_1783918214520",
+      "title": "aaaa",
+      "customerId": "customer_1783918214520",
+      "weight": 123,
+      "duration": 2,
+      "origin": "barasat",
+      "destination": "salt lake",
+      "auctionEnd": "2026-07-13T04:52:14.520Z",
+      "budget": 6150,
+      "createdAt": "2026-07-13T04:50:14.520Z",
+      "status": "open",
+      "bids": []
+    }
+  ],
   "transactions": [],
-  "chats": []
+  "chats": [
+    {
+      "id": "msg_1783916041451",
+      "sender": "user",
+      "senderRole": "customer",
+      "text": "hi",
+      "timestamp": "2026-07-13T04:14:01.451Z"
+    },
+    {
+      "id": "msg_1783916771619",
+      "sender": "user",
+      "senderRole": "customer",
+      "text": "How do I bid?",
+      "timestamp": "2026-07-13T04:26:11.619Z"
+    },
+    {
+      "id": "msg_1783916874470",
+      "sender": "user",
+      "senderRole": "customer",
+      "text": "How do I bid?",
+      "timestamp": "2026-07-13T04:27:54.470Z"
+    },
+    {
+      "id": "msg_1783916992062",
+      "sender": "user",
+      "senderRole": "customer",
+      "text": "How to place bidTell me about payment methods",
+      "timestamp": "2026-07-13T04:29:52.062Z"
+    },
+    {
+      "id": "msg_1783917005949",
+      "sender": "user",
+      "senderRole": "customer",
+      "text": "What's the billing system?",
+      "timestamp": "2026-07-13T04:30:05.949Z"
+    },
+    {
+      "id": "msg_1783917613766",
+      "sender": "user",
+      "senderRole": "customer",
+      "text": "hi",
+      "timestamp": "2026-07-13T04:40:13.766Z"
+    }
+  ]
 }

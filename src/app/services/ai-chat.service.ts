@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface AiMessage {
@@ -12,18 +13,7 @@ export interface AiMessage {
   providedIn: 'root'
 })
 export class AiChatService {
-  private aiResponses = [
-    'Analyzing your request against active tender database...',
-    'Found 3 matching logistics partners. Would you like details?',
-    'Current lowest bid for your route is $1,240. Competitive rate detected.',
-    'Route optimization suggests 15% fuel savings via Highway 5 corridor.',
-    'Your delivery has been assigned to Alpha-Carrier Express.',
-    'Real-time tracking available. Current location: Sector 5, ETA 2h 30m',
-    'Payment processed. Reference #TXN-00951-X12',
-    'Partner ratings: Alpha Express 4.8/5, Barasat Corp 4.6/5',
-    'Recommended: Bundle this with our next tender for volume discount',
-    'Compliance check complete. All documentation verified for interstate movement'
-  ];
+  private readonly apiBase = 'http://localhost:3000/api';
 
   private conversationHistory = new BehaviorSubject<AiMessage[]>([
     {
@@ -35,7 +25,7 @@ export class AiChatService {
   ]);
   public conversationHistory$ = this.conversationHistory.asObservable();
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   sendQuery(userQuery: string): Observable<AiMessage> {
     // Add user message
@@ -49,21 +39,38 @@ export class AiChatService {
     const history = [...this.conversationHistory.value, userMessage];
     this.conversationHistory.next(history);
 
-    // Simulate AI response after 1.5 seconds
     return new Observable(subscriber => {
-      setTimeout(() => {
-        const aiResponse: AiMessage = {
-          id: 'msg_' + (Date.now() + 1),
-          text: this.aiResponses[Math.floor(Math.random() * this.aiResponses.length)],
-          sender: 'ai',
-          timestamp: new Date()
-        };
+      this.http.post<{ reply: string }>(`${this.apiBase}/chat/send`, {
+        sender: 'user',
+        senderRole: 'customer',
+        text: userQuery
+      }).subscribe({
+        next: (res) => {
+          const aiResponse: AiMessage = {
+            id: 'msg_' + (Date.now() + 1),
+            text: res.reply || 'I can help with tenders, bids, routing, and billing on Renta.',
+            sender: 'ai',
+            timestamp: new Date()
+          };
 
-        const updatedHistory = [...this.conversationHistory.value, aiResponse];
-        this.conversationHistory.next(updatedHistory);
-        subscriber.next(aiResponse);
-        subscriber.complete();
-      }, 1500);
+          const updatedHistory = [...this.conversationHistory.value, aiResponse];
+          this.conversationHistory.next(updatedHistory);
+          subscriber.next(aiResponse);
+          subscriber.complete();
+        },
+        error: () => {
+          const fallback: AiMessage = {
+            id: 'msg_' + (Date.now() + 1),
+            text: 'I am temporarily offline. Try asking about a tender, bid, or payment and I will help shortly.',
+            sender: 'ai',
+            timestamp: new Date()
+          };
+          const updatedHistory = [...this.conversationHistory.value, fallback];
+          this.conversationHistory.next(updatedHistory);
+          subscriber.next(fallback);
+          subscriber.complete();
+        }
+      });
     });
   }
 

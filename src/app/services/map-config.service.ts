@@ -20,12 +20,12 @@ function getLeaflet() {
   providedIn: 'root'
 })
 export class MapConfigService {
-  // Default map settings
+  // Default map settings with fallback tile layers
   private mapSettings = {
     zoom: 12,
     center: { lat: 22.5726, lng: 88.3639 }, // Kolkata, India
-    tileLayer: 'https://{s}.tile.openfreemap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://openfreemap.org/">OpenFreeMap</a>'
+    tileLayer: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   };
 
   // Set up default Leaflet icon (important for marker display)

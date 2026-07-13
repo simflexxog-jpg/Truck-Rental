@@ -89,6 +89,7 @@ export class TenderService {
           (tender as any).assignedBidId = res.acceptedBid?.id || bidId;
           (tender as any).assignedPartnerId = res.acceptedBid?.partnerId || (tender as any).assignedPartnerId;
           (tender as any).assignedPartnerName = res.acceptedBid?.partnerName || (tender as any).assignedPartnerName;
+          (tender as any).winningBidAmount = res.acceptedBid?.bidAmount || (tender as any).assignedBidId;
           const allTenders = this.tenders.value;
           this.tenders.next([...allTenders]);
           this.syncCache();
@@ -105,6 +106,7 @@ export class TenderService {
           (tender as any).assignedBidId = bid.id;
           (tender as any).assignedPartnerId = bid.partnerId;
           (tender as any).assignedPartnerName = bid.partnerName;
+          (tender as any).winningBidAmount = bid.bidAmount;
           const allTenders = this.tenders.value;
           this.tenders.next([...allTenders]);
           this.syncCache();

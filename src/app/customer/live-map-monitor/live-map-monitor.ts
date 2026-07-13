@@ -94,11 +94,25 @@ export class LiveMapMonitorComponent implements OnInit, AfterViewInit, OnChanges
         settings.zoom
       );
 
-      // Add tile layer
-      L.tileLayer(settings.tileLayer, {
+      // Add tile layer with fallback support
+      const tileLayerOptions = {
         attribution: settings.attribution,
-        maxZoom: 19
-      }).addTo(this.map!);
+        maxZoom: 19,
+        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+      };
+
+      // Try primary tile layer, with fallback options
+      const primaryLayer = L.tileLayer(settings.tileLayer, tileLayerOptions);
+      primaryLayer.on('error', () => {
+        console.warn('Primary tile layer failed, trying fallback...');
+        primaryLayer.remove();
+        // Fallback to CartoDB
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          maxZoom: 20
+        }).addTo(this.map!);
+      });
+      primaryLayer.addTo(this.map!);
 
       this.map.invalidateSize();
 

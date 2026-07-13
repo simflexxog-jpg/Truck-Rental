@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AiChatbox } from './ai-chatbox';
+import { AiChatboxComponent } from './ai-chatbox';
 
 describe('AiChatbox', () => {
-  let component: AiChatbox;
-  let fixture: ComponentFixture<AiChatbox>;
+  let component: AiChatboxComponent;
+  let fixture: ComponentFixture<AiChatboxComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AiChatbox],
+      imports: [AiChatboxComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AiChatbox);
+    fixture = TestBed.createComponent(AiChatboxComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

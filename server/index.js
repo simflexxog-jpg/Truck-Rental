@@ -1,8 +1,10 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const path = require('path');
 const http = require('http');
 const mongoose = require('mongoose');
 const { Server } = require('socket.io');

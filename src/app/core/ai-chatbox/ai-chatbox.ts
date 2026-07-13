@@ -32,7 +32,7 @@ export class AiChatboxComponent implements AfterViewChecked, OnInit {
 
   sendMessage() {
     if (!this.userInput.trim() || this.isLoading) return;
-    
+
     const userQuery = this.userInput;
     this.userInput = '';
     this.isLoading = true;

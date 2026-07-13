@@ -15,7 +15,8 @@ export class LoginComponent implements OnInit {
   selectedRole: 'customer' | 'partner' = 'customer';
   isLoading = false;
   errorMessage = '';
-  
+  infoMessage = '';
+
   credentials = {
     email: '',
     password: ''
@@ -25,10 +26,22 @@ export class LoginComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      const user = this.authService.getCurrentUser();
+      const route = user?.role === 'customer' ? '/customer' : '/partner';
+      this.router.navigate([route]);
+      return;
+    }
+
     const role = this.route.snapshot.queryParamMap.get('role');
     if (role === 'partner' || role === 'customer') {
       this.selectedRole = role as 'customer' | 'partner';
       this.lockRole = true;
+    }
+
+    const registered = this.route.snapshot.queryParamMap.get('registered');
+    if (registered === 'true') {
+      this.infoMessage = 'Account created successfully. Please sign in with your new account.';
     }
   }
 
@@ -40,6 +53,7 @@ export class LoginComponent implements OnInit {
   onSubmit() {
     this.isLoading = true;
     this.errorMessage = '';
+    this.infoMessage = '';
 
     this.authService.login(this.credentials.email, this.credentials.password, this.selectedRole).subscribe({
       next: (user) => {
