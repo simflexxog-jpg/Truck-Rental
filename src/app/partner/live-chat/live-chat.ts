@@ -15,20 +15,23 @@ export class LiveChatComponent implements AfterViewChecked, OnInit, OnChanges, O
   messages: any[] = [];
   @Input() tenderId?: string;
   canSend = true;
-  private refreshTimer: any;
 
   constructor(private chatService: ChatService) {}
 
   ngOnInit() {
     this.chatService.messages$.subscribe(messages => this.messages = messages);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', this.handleWindowActivity);
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    }
     if (this.tenderId) {
-      this.startMessagePolling();
+      this.loadMessagesForTender(this.tenderId);
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['tenderId'] && this.tenderId) {
-      this.startMessagePolling();
+      this.loadMessagesForTender(this.tenderId);
     }
   }
 
@@ -68,20 +71,26 @@ export class LiveChatComponent implements AfterViewChecked, OnInit, OnChanges, O
     return true;
   }
 
-  private startMessagePolling() {
-    if (!this.tenderId) return;
-    if (this.refreshTimer) {
-      clearInterval(this.refreshTimer);
+  private handleWindowActivity = () => {
+    if (this.tenderId) {
+      this.loadMessagesForTender(this.tenderId);
     }
-    this.chatService.loadMessagesForTender(this.tenderId);
-    this.refreshTimer = setInterval(() => {
-      this.chatService.loadMessagesForTender(this.tenderId!);
-    }, 5000);
+  };
+
+  private handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible' && this.tenderId) {
+      this.loadMessagesForTender(this.tenderId);
+    }
+  };
+
+  private loadMessagesForTender(tenderId: string) {
+    this.chatService.loadMessagesForTender(tenderId);
   }
 
   ngOnDestroy() {
-    if (this.refreshTimer) {
-      clearInterval(this.refreshTimer);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('focus', this.handleWindowActivity);
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     }
   }
 

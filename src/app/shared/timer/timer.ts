@@ -1,10 +1,11 @@
-import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-timer',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span class="font-mono tracking-wide" [ngClass]="remainingSeconds < 60 ? 'text-rose-400 animate-pulse' : 'text-amber-400'">
       {{ formatTime(remainingSeconds) }}
@@ -16,6 +17,8 @@ export class TimerComponent implements OnInit, OnDestroy, OnChanges {
   @Input() targetTime?: string | Date | number;
   remainingSeconds: number = 0;
   private intervalId: any;
+
+  constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.resetTimer();
@@ -34,12 +37,19 @@ export class TimerComponent implements OnInit, OnDestroy, OnChanges {
   private resetTimer() {
     this.clearTimer();
     this.remainingSeconds = this.computeRemainingSeconds();
-    this.intervalId = setInterval(() => {
-      this.remainingSeconds = this.computeRemainingSeconds();
-      if (this.remainingSeconds <= 0) {
-        this.remainingSeconds = 0;
-      }
+    this.tick();
+    this.intervalId = window.setInterval(() => {
+      this.tick();
     }, 1000);
+  }
+
+  private tick() {
+    this.remainingSeconds = this.computeRemainingSeconds();
+    if (this.remainingSeconds <= 0) {
+      this.remainingSeconds = 0;
+    }
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   private clearTimer() {

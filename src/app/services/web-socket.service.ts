@@ -13,6 +13,8 @@ export class WebSocketService {
   private connectionState = new BehaviorSubject<boolean>(false);
   public connected$ = this.connectionState.asObservable();
   private incomingMessages = new Subject<WebSocketMessage>();
+  private reconnectTimer?: number;
+  private readonly reconnectDelayMs = 3000;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -37,10 +39,15 @@ export class WebSocketService {
       this.socket = new WebSocket(this.socketUrl);
       this.socket.onopen = () => {
         this.connectionState.next(true);
+        if (this.reconnectTimer) {
+          window.clearTimeout(this.reconnectTimer);
+          this.reconnectTimer = undefined;
+        }
       };
       this.socket.onclose = () => {
         this.connectionState.next(false);
         this.socket = undefined;
+        this.scheduleReconnect();
       };
       this.socket.onerror = () => {
         this.connectionState.next(false);
@@ -57,10 +64,25 @@ export class WebSocketService {
       };
     } catch (e) {
       console.warn('WebSocket connect failed', e);
+      this.scheduleReconnect();
     }
   }
 
+  private scheduleReconnect() {
+    if (typeof window === 'undefined' || this.reconnectTimer) {
+      return;
+    }
+    this.reconnectTimer = window.setTimeout(() => {
+      this.reconnectTimer = undefined;
+      this.connect();
+    }, this.reconnectDelayMs);
+  }
+
   disconnect() {
+    if (this.reconnectTimer) {
+      window.clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = undefined;
+    }
     this.socket?.close();
     this.socket = undefined;
     this.connectionState.next(false);

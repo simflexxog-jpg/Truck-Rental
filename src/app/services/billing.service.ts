@@ -40,23 +40,25 @@ export class BillingService {
   public metrics$ = this.metrics.asObservable();
 
   private API_BASE = (typeof window !== 'undefined' && window.location?.origin ? `${window.location.origin}/api` : '/api');
-  private refreshTimer?: number;
-  private readonly refreshIntervalMs = 5000;
 
   constructor(private http: HttpClient) {
-    this.startAutoRefresh();
-  }
-
-  private startAutoRefresh(): void {
-    if (typeof window === 'undefined' || this.refreshTimer) {
-      return;
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', this.handleWindowActivity);
+      window.addEventListener('online', this.handleWindowActivity);
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
-
     this.refreshTransactions();
-    this.refreshTimer = window.setInterval(() => {
-      this.refreshTransactions();
-    }, this.refreshIntervalMs);
   }
+
+  private handleWindowActivity = () => {
+    this.refreshTransactions();
+  };
+
+  private handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      this.refreshTransactions();
+    }
+  };
 
   private refreshTransactions(): void {
     this.http.get<Transaction[]>(`${this.API_BASE}/billing`).pipe(
@@ -83,6 +85,7 @@ export class BillingService {
         }
         currentMetrics.fees += amount * 0.03;
         this.metrics.next({ ...currentMetrics });
+        this.refreshTransactions();
       }),
       catchError(err => {
         // fallback to local transaction
@@ -100,6 +103,7 @@ export class BillingService {
         if (status === 'cleared') currentMetrics.disbursed += amount; else currentMetrics.escrow += amount;
         currentMetrics.fees += amount * 0.03;
         this.metrics.next({ ...currentMetrics });
+        this.refreshTransactions();
         return of(transaction);
       })
     );

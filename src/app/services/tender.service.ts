@@ -57,8 +57,6 @@ export class TenderService {
   ]);
   public activeTenders$ = this.activeTenders.asObservable();
 
-  private refreshTimer?: number;
-  private readonly refreshIntervalMs = 5000;
   private readonly syncStorageKey = 'truck-rental-sync';
 
   constructor(private billingService: BillingService, private http: HttpClient, private webSocketService: WebSocketService) {
@@ -72,8 +70,11 @@ export class TenderService {
     });
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', this.handleStorageSync);
+      window.addEventListener('focus', this.handleWindowActivity);
+      window.addEventListener('online', this.handleWindowActivity);
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
-    this.startAutoRefresh();
+    this.refreshTenders();
   }
 
   private handleStorageSync = (event: StorageEvent) => {
@@ -88,16 +89,15 @@ export class TenderService {
     }
   }
 
-  private startAutoRefresh(): void {
-    if (typeof window === 'undefined' || this.refreshTimer) {
-      return;
-    }
-
+  private handleWindowActivity = () => {
     this.refreshTenders();
-    this.refreshTimer = window.setInterval(() => {
+  };
+
+  private handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
       this.refreshTenders();
-    }, this.refreshIntervalMs);
-  }
+    }
+  };
 
   private refreshTenders(): void {
     this.http.get<Tender[]>(`${API_BASE}/tenders`).pipe(
@@ -160,6 +160,7 @@ export class TenderService {
           this.tenders.next([...allTenders]);
           this.syncCache();
           this.notifyTabs();
+          this.refreshTenders();
           // create local transaction
           return this.billingService.createTransaction(tenderId, bid.partnerName, bid.bidAmount, 'escrow').pipe(
             map(txn => ({ tender, transactionId: txn.id }))
@@ -193,6 +194,7 @@ export class TenderService {
         this.tenders.next([...allTenders]);
         this.syncCache();
         this.notifyTabs();
+        this.refreshTenders();
         return of(tender);
       })
     );
@@ -230,6 +232,8 @@ export class TenderService {
         this.tenders.next(allTenders);
         this.syncCache();
         this.notifyTabs();
+        this.refreshTenders();
+        this.refreshTenders();
         this.webSocketService.send({ type: 'tender_created', payload: tender });
         return of(tender);
       })
@@ -322,6 +326,7 @@ export class TenderService {
         this.tenders.next([...allTenders]);
         this.syncCache();
         this.notifyTabs();
+        this.refreshTenders();
         return of(bid);
       })
     );
