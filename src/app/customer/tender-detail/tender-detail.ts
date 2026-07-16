@@ -51,6 +51,19 @@ export class TenderDetailComponent implements OnInit, OnChanges {
     this.router.navigate(['/billing/pay', this.tender.id]);
   }
 
+  goToChat() {
+    if (!this.tender) return;
+    this.router.navigate(['/customer']);
+  }
+
+  canPayForOrder(): boolean {
+    return !!this.tender && this.tender.status === 'assigned' && !this.tender.paymentApproved;
+  }
+
+  getActionLabel(): string {
+    return this.canPayForOrder() ? 'Pay for this order' : 'Chat with Partner';
+  }
+
   reject(bid: Bid) {
     if (!this.tender) return;
     this.isLoading = true;

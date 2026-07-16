@@ -19,7 +19,8 @@ export class LoginComponent implements OnInit {
 
   credentials = {
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   };
   lockRole = false;
 
@@ -41,7 +42,7 @@ export class LoginComponent implements OnInit {
 
     const registered = this.route.snapshot.queryParamMap.get('registered');
     if (registered === 'true') {
-      this.infoMessage = 'Account created successfully. Please sign in with your new account.';
+      this.infoMessage = 'Account created successfully. Please verify your email before signing in.';
     }
   }
 
@@ -55,19 +56,19 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
     this.infoMessage = '';
 
-    this.authService.login(this.credentials.email, this.credentials.password, this.selectedRole).subscribe({
-      next: (user) => {
-        if (user) {
-          // Navigate based on role
-          const route = user.role === 'customer' ? '/customer' : '/partner';
+    this.authService.login(this.credentials.email, this.credentials.password, this.credentials.rememberMe).subscribe({
+      next: (response) => {
+        const role = response.user?.role;
+        if (response.accessToken && role) {
+          const route = role === 'customer' ? '/customer' : '/partner';
           this.router.navigate([route]);
         } else {
-          this.errorMessage = 'Invalid credentials or role mismatch. Please ensure you are using the correct role.';
+          this.errorMessage = 'Login failed. Please check your credentials.';
         }
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = 'Login failed. Please check your credentials.';
+        this.errorMessage = err?.error?.error || 'Login failed. Please check your credentials.';
         this.isLoading = false;
       }
     });

@@ -17,9 +17,9 @@ export class AddOnJobBoardComponent implements OnInit {
 
   constructor(private routeService: RouteService, private tenderService: TenderService, private auth: AuthService) {
     const user = this.auth.getCurrentUser();
-    if (user) { this.partnerId = user.id || this.partnerId; this.partnerName = user.entityName || this.partnerName; }
+    if (user) { this.partnerId = user.id || this.partnerId; this.partnerName = user.entityName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || this.partnerName; }
     this.auth.currentUser$.subscribe(u => {
-      if (u) { this.partnerId = u.id; this.partnerName = u.entityName; }
+      if (u) { this.partnerId = u.id; this.partnerName = u.entityName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || this.partnerName; }
     });
   }
 

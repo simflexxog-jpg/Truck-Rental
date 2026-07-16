@@ -8,6 +8,8 @@ import { PaymentPageComponent } from './billing/payment-page/payment-page';
 import { CustomerGuard } from './guards/customer.guard';
 import { PartnerGuard } from './guards/partner.guard';
 import { AuthGuard } from './guards/auth.guard';
+import { VerifyEmailComponent } from './auth/verify-email/verify-email';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password';
 
 export const routes: Routes = [
   // Default redirect to login
@@ -16,6 +18,8 @@ export const routes: Routes = [
   // Auth Vectors
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'verify-email', component: VerifyEmailComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   
   // Core Operational Dashboards
   { path: 'customer', component: CustomerDashboardComponent, canActivate: [CustomerGuard] },

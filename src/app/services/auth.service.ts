@@ -1,83 +1,76 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface User {
   id: string;
   email: string;
-  entityName: string;
-  role: 'customer' | 'partner';
-  createdAt: Date;
+  role: 'customer' | 'partner' | 'driver';
+  entityName?: string;
+  firstName?: string;
+  lastName?: string;
+  companyId?: string | null;
+  permissions?: string[];
+  emailVerified?: boolean;
+}
+
+interface AuthResponse {
+  accessToken?: string;
+  user?: User;
+  message?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly apiBaseUrl = environment.apiUrl || '';
+
   private currentUser = new BehaviorSubject<User | null>(this.loadUserFromStorage());
   public currentUser$ = this.currentUser.asObservable();
 
   private isAuthenticated = new BehaviorSubject<boolean>(!!this.loadUserFromStorage());
   public isAuthenticated$ = this.isAuthenticated.asObservable();
+  private accessToken: string | null = null;
 
-  constructor() {}
-
-  register(entityName: string, email: string, password: string, role: 'customer' | 'partner', autoLogin: boolean = false): Observable<User> {
-    const newUser: User = {
-      id: 'user_' + Date.now(),
-      email,
-      entityName,
-      role,
-      createdAt: new Date()
-    };
-
-    // Store in localStorage
-    const users = this.getAllUsers();
-    users.push({ ...newUser, password });
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem('users', JSON.stringify(users));
-    }
-
-    // Only set as current user if explicitly requested (avoid accidental cross-role auto-login)
-    if (autoLogin) {
-      this.currentUser.next(newUser);
-      this.isAuthenticated.next(true);
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-      }
-    }
-
-    return new Observable(subscriber => {
-      subscriber.next(newUser);
-      subscriber.complete();
-    });
+  constructor(private http: HttpClient) {
+    this.accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null;
   }
 
-  login(email: string, password: string, role?: 'customer' | 'partner'): Observable<User | null> {
-    return new Observable(subscriber => {
-      const users = this.getAllUsers();
-      const user = users.find(u => u.email === email && u.password === password && (role ? u.role === role : true));
+  register(payload: Record<string, string>): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/api/auth/register`, payload, this.authOptions()).pipe(
+      catchError((error) => this.handleError(error))
+    );
+  }
 
-      if (user) {
-        const { password: _, ...userWithoutPassword } = user;
-        this.currentUser.next(userWithoutPassword as User);
-        this.isAuthenticated.next(true);
-        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-          localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+  login(email: string, password: string, rememberMe = false): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/api/auth/login`, { email, password, rememberMe }, this.authOptions()).pipe(
+      tap((response) => this.handleAuthResponse(response)),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  refreshToken(): Observable<{ accessToken: string }> {
+    return this.http.post<{ accessToken: string }>(`${this.apiBaseUrl}/api/auth/refresh`, {}, this.authOptions()).pipe(
+      tap((response) => {
+        if (response.accessToken) {
+          this.accessToken = response.accessToken;
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('accessToken', response.accessToken);
+          }
         }
-        subscriber.next(userWithoutPassword as User);
-      } else {
-        subscriber.next(null);
-      }
-      subscriber.complete();
-    });
+      }),
+      catchError((error) => this.handleError(error))
+    );
   }
 
-  logout(): void {
-    this.currentUser.next(null);
-    this.isAuthenticated.next(false);
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.removeItem('currentUser');
-    }
+  logout(): Observable<any> {
+    this.clearSession();
+    return this.http.post(`${this.apiBaseUrl}/api/auth/logout`, {}, this.authOptions()).pipe(
+      catchError(() => this.handleError(new HttpErrorResponse({ error: 'logout failed', status: 0 })) )
+    );
   }
 
   getCurrentUser(): User | null {
@@ -88,6 +81,45 @@ export class AuthService {
     return this.isAuthenticated.value;
   }
 
+  getAccessToken(): string | null {
+    return this.accessToken;
+  }
+
+  private handleAuthResponse(response: AuthResponse): void {
+    if (response.accessToken) {
+      this.accessToken = response.accessToken;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('accessToken', response.accessToken);
+      }
+    }
+
+    if (response.user) {
+      const normalizedUser: User = {
+        ...response.user,
+        entityName: response.user.entityName || `${response.user.firstName || ''} ${response.user.lastName || ''}`.trim() || response.user.email
+      };
+      this.currentUser.next(normalizedUser);
+      this.isAuthenticated.next(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('currentUser', JSON.stringify(normalizedUser));
+      }
+    }
+  }
+
+  private authOptions() {
+    return { withCredentials: true };
+  }
+
+  private clearSession(): void {
+    this.currentUser.next(null);
+    this.isAuthenticated.next(false);
+    this.accessToken = null;
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('accessToken');
+      localStorage.removeItem('currentUser');
+    }
+  }
+
   private loadUserFromStorage(): User | null {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return null;
@@ -96,11 +128,7 @@ export class AuthService {
     return user ? JSON.parse(user) : null;
   }
 
-  private getAllUsers(): any[] {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return [];
-    }
-    const users = localStorage.getItem('users');
-    return users ? JSON.parse(users) : [];
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    return throwError(() => error);
   }
 }

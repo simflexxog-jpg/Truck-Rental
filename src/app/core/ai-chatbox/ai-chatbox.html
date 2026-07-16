@@ -17,11 +17,11 @@
     
     <div *ngFor="let msg of messages" class="flex" [ngClass]="msg.sender === 'user' ? 'justify-end' : 'justify-start'">
       
-      <div *ngIf="msg.sender !== (currentUser?.entityName || 'You')" class="bg-slate-800 p-2.5 rounded-xl rounded-tl-sm border border-slate-700 text-slate-300 max-w-[85%] shadow-md">
+      <div *ngIf="msg.sender !== getDisplayName(currentUser)" class="bg-slate-800 p-2.5 rounded-xl rounded-tl-sm border border-slate-700 text-slate-300 max-w-[85%] shadow-md">
         {{ msg.text }}
       </div>
       
-      <div *ngIf="msg.sender === (currentUser?.entityName || 'You')" class="bg-cyan-900/60 p-2.5 rounded-xl rounded-tr-sm border border-cyan-800/50 text-cyan-100 max-w-[85%] shadow-md text-right">
+      <div *ngIf="msg.sender === getDisplayName(currentUser)" class="bg-cyan-900/60 p-2.5 rounded-xl rounded-tr-sm border border-cyan-800/50 text-cyan-100 max-w-[85%] shadow-md text-right">
         {{ msg.text }}
       </div>
       

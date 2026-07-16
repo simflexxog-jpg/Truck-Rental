@@ -95,4 +95,8 @@ export class PaymentPageComponent implements OnInit {
   goHome() {
     this.router.navigate(['/customer']);
   }
+
+  goToChat() {
+    this.router.navigate(['/customer']);
+  }
 }

@@ -26,12 +26,12 @@ export class PartnerTendersComponent implements OnInit {
     const user = this.auth.getCurrentUser();
     if (user) {
       this.partnerId = user.id || this.partnerId;
-      this.partnerName = user.entityName || this.partnerName;
+      this.partnerName = user.entityName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || this.partnerName;
     }
     this.auth.currentUser$.subscribe(u => {
       if (u) {
         this.partnerId = u.id;
-        this.partnerName = u.entityName;
+        this.partnerName = u.entityName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || this.partnerName;
       }
     });
   }

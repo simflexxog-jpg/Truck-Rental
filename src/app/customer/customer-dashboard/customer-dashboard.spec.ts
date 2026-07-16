@@ -29,4 +29,14 @@ describe('CustomerDashboard', () => {
 
     expect(delistSpy).toHaveBeenCalledWith('tender_1');
   });
+
+  it('should switch assigned orders from Pay to Chat when payment has been approved', () => {
+    const approvedOrder = { id: 'tender_2', status: 'assigned', paymentApproved: true } as any;
+    const pendingOrder = { id: 'tender_3', status: 'assigned', paymentApproved: false } as any;
+
+    expect(component.getOrderActionLabel(approvedOrder)).toBe('Chat with Partner');
+    expect(component.getOrderActionLabel(pendingOrder)).toBe('Pay');
+    expect(component.canPayOrder(pendingOrder)).toBeTrue();
+    expect(component.canPayOrder(approvedOrder)).toBeFalse();
+  });
 });

@@ -24,6 +24,13 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+  getDisplayName(user: User | null): string {
+    if (!user) {
+      return 'User';
+    }
+    return user.entityName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

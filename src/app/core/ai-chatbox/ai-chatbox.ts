@@ -120,6 +120,13 @@ export class AiChatboxComponent implements AfterViewChecked, OnInit, AfterViewIn
     this.isMinimized = !this.isMinimized;
   }
 
+  getDisplayName(user: User | null): string {
+    if (!user) {
+      return 'You';
+    }
+    return user.entityName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'You';
+  }
+
   sendMessage() {
     if (!this.userInput.trim() || this.isLoading || !this.isChatEnabled || !this.activeTenderId) return;
 
@@ -127,7 +134,7 @@ export class AiChatboxComponent implements AfterViewChecked, OnInit, AfterViewIn
     this.userInput = '';
     this.isLoading = true;
 
-    const sender = this.currentUser?.entityName || 'You';
+    const sender = this.getDisplayName(this.currentUser);
     const senderRole: 'client' | 'driver' = this.currentUser?.role === 'partner' ? 'driver' : 'client';
 
     this.chatService.addLocalMessage({

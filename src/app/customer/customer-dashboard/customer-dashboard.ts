@@ -72,6 +72,19 @@ export class CustomerDashboardComponent implements OnInit {
     this.router.navigate(['/billing/pay', order.id]);
   }
 
+  openChat(order: Tender) {
+    this.selectTender(order.id);
+    this.router.navigate(['/customer']);
+  }
+
+  canPayOrder(order: Tender): boolean {
+    return order.status === 'assigned' && !order.paymentApproved;
+  }
+
+  getOrderActionLabel(order: Tender): string {
+    return this.canPayOrder(order) ? 'Pay' : 'Chat with Partner';
+  }
+
   delistOrder(order: Tender) {
     this.tenderService.delistTender(order.id);
   }

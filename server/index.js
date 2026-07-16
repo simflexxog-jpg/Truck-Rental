@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const http = require('http');
 const mongoose = require('mongoose');
 const { Server } = require('socket.io');
@@ -19,8 +20,29 @@ const app = express();
 const httpServer = http.createServer(app);
 
 applySecurityMiddleware(app);
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:4200',
+  'http://localhost:63720',
+  'http://127.0.0.1:4200',
+  'http://127.0.0.1:63720',
+  'http://localhost:64041',
+  'http://127.0.0.1:64041'
+].filter(Boolean);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(authMiddleware);
 
 // Preserve the lightweight file-based routes for compatibility

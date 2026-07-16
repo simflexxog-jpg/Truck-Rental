@@ -11,7 +11,7 @@
       "auctionEnd": "2026-07-13T04:52:14.520Z",
       "budget": 6150,
       "createdAt": "2026-07-13T04:50:14.520Z",
-      "status": "open",
+      "status": "assigned",
       "bids": [
         {
           "id": "bid_1783957069510",
@@ -23,7 +23,12 @@
         }
       ],
       "lowestBid": 2000,
-      "leadingPartner": "Agnib"
+      "leadingPartner": "Agnib",
+      "paymentApproved": false,
+      "assignedBidId": "bid_1783957069510",
+      "assignedPartnerId": "user_1783913816941",
+      "assignedPartnerName": "Agnib",
+      "winningBidAmount": 2000
     },
     {
       "id": "tender_1783957026105",
